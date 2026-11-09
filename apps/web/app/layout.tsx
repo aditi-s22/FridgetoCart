@@ -20,7 +20,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "FridgeToCart — Cook smarter, shop less",
+  title: "FridgeToCart : Cook smarter, shop less",
   description:
     "Snap your fridge, get meals you can cook right now, and a cart for whatever's missing.",
 };

@@ -12,6 +12,7 @@
     "db:push": "pnpm db:sync-dim && prisma db push",
     "db:seed": "tsx prisma/seed/seed.ts",
     "db:sync-dim": "tsx prisma/sync-embed-dim.ts",
+    "eval": "tsx eval/run.ts",
     "compare:vision": "tsx scripts/compare-vision.ts",
     "prepare:recipes": "tsx scripts/prepare-recipes.ts",
     "dev:token": "tsx scripts/dev-token.ts"
