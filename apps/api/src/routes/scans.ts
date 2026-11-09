@@ -7,6 +7,7 @@ import { getGraph, threadOf } from "../graph/build";
 import { progressOf, statusOf } from "../graph/progress";
 import { AppError, parse } from "../http";
 import { isOwnImageUrl } from "../services/storage";
+import { liveCart } from "./cart";
 import { prefsOf } from "./prefs";
 
 export const scans = Router();
@@ -61,6 +62,7 @@ scans.get("/:id", async (req, res) => {
     confirmed: p.values.confirmed ?? [],
     recipes: p.values.recipes ?? [],
     selectedRecipeId: p.values.selectedRecipeId ?? null,
+    cart: await liveCart(p),
   };
   res.json(body);
 });

@@ -8,6 +8,7 @@ import { getGraph, threadOf } from "../graph/build";
 import { progressOf } from "../graph/progress";
 import { AppError, parse } from "../http";
 import { prefsOf } from "./prefs";
+import { liveCart } from "./cart";
 import { ownScan } from "./scans";
 
 /** Resuming the two human-in-the-loop pauses. */
@@ -45,12 +46,22 @@ scanSteps.post("/:id/pick", async (req, res) => {
   const { recipeId } = parse(PickRequest, req.body);
   const graph = await getGraph();
   const before = await progressOf(graph, scan.id);
-  if (before.pending?.type !== "pick_recipe") throw new AppError(409, "not_awaiting_pick", "This scan is not waiting for a recipe pick");
-  if (!before.pending.recipes.some((r) => r.id === recipeId)) throw new AppError(400, "bad_recipe", "Unknown recipe for this scan");
+  const started = Date.now();
 
-  await graph.invoke(new Command({ resume: recipeId }), threadOf(scan.id));
-  // M2 ends here; the cart (status building_cart) arrives in M3.
-  await prisma.scan.update({ where: { id: scan.id }, data: { status: "done", selectedRecipeId: recipeId } });
-  const body: PickResponse = { status: "done", cart: null };
+  if (before.pending?.type === "pick_recipe") {
+    if (!before.pending.recipes.some((r) => r.id === recipeId)) throw new AppError(400, "bad_recipe", "Unknown recipe for this scan");
+    await prisma.scan.update({ where: { id: scan.id }, data: { status: "building_cart", selectedRecipeId: recipeId } });
+    await graph.invoke(new Command({ resume: recipeId }), threadOf(scan.id));
+  } else if (!before.pending && before.next.length > 0 && scan.status === "building_cart") {
+    // The API died while building the cart; finish from the last checkpoint (cart writes are idempotent).
+    await graph.invoke(null, threadOf(scan.id));
+  } else {
+    throw new AppError(409, "not_awaiting_pick", "This scan is not waiting for a recipe pick");
+  }
+
+  const after = await progressOf(graph, scan.id);
+  await prisma.scan.update({ where: { id: scan.id }, data: { status: "done" } });
+  console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: "cart", latencyMs: Date.now() - started }));
+  const body: PickResponse = { status: "done", cart: await liveCart(after) };
   res.json(body);
 });

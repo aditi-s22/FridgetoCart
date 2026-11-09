@@ -2,6 +2,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import type { Embeddings } from "@langchain/core/embeddings";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
+import type { StructuredToolInterface } from "@langchain/core/tools";
 import { toJsonSchema } from "@langchain/core/utils/json_schema";
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
@@ -145,6 +146,30 @@ export async function structuredWithUsage<T extends z.ZodTypeAny>(
 
 export async function structured<T extends z.ZodTypeAny>(opts: StructuredOpts<T>): Promise<z.infer<T>> {
   return (await structuredWithUsage(opts)).data;
+}
+
+/** One tool-calling turn of an agent: the model sees the tools and may answer with tool calls. */
+export async function agentStep(opts: {
+  role: ModelRole;
+  node: string;
+  tools: StructuredToolInterface[];
+  messages: BaseMessage[];
+  timeoutMs?: number;
+}): Promise<AIMessage> {
+  const model = chatModel(opts.role);
+  if (!model.bindTools) throw new Error(`${ROLE_SPEC[opts.role]} does not support tool calling`);
+  const started = Date.now();
+  const out = await model
+    .bindTools(opts.tools)
+    .invoke(opts.messages, { timeout: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS })
+    .catch((err: unknown) => {
+      console.warn(`[llm] ${opts.node} failed:`, (err as Error).message);
+      throw new AppError(502, "llm_unavailable", "The AI service failed. Please try again.");
+    });
+  const usage = out.usage_metadata ?? { input_tokens: 0, output_tokens: 0 };
+  const call = { model: modelOf(opts.role), inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+  logUsage({ ...call, latencyMs: Date.now() - started, node: opts.node, ok: true });
+  return out;
 }
 
 let embedder: Embeddings | null = null;

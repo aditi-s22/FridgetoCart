@@ -54,6 +54,11 @@ export const BASE_STATE: ScanStateT = {
   recipes: [],
   recipeIssue: null,
   selectedRecipeId: null,
+  missing: [],
+  cartId: null,
+  cart: null,
+  messages: [],
+  agentSteps: 0,
   attempts: 0,
   genAttempts: 0,
 };

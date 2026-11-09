@@ -50,5 +50,14 @@ export const ScanView = z.object({
   confirmed: z.array(Ingredient),
   recipes: z.array(Recipe),
   selectedRecipeId: z.string().nullable(),
+  cart: Cart.nullable(),
 });
 export type ScanView = z.infer<typeof ScanView>;
+
+export const SetCartQtyRequest = z.object({ qty: z.number().int().min(0).max(20) });
+export type SetCartQtyRequest = z.infer<typeof SetCartQtyRequest>;
+
+/** Store API bodies */
+export const CreateCartRequest = z.object({ scanId: z.string().min(1) });
+export const AddCartItemRequest = z.object({ productId: z.string().min(1), qty: z.number().int().min(0).max(20) });
+export type AddCartItemRequest = z.infer<typeof AddCartItemRequest>;

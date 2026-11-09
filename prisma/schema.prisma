@@ -110,3 +110,10 @@ model CartItem {
 
   @@unique([cartId, productId])
 }
+
+/// Replays the stored response for a repeated POST /carts/:id/items with the same Idempotency-Key.
+model IdempotencyKey {
+  key       String   @id
+  response  Json
+  createdAt DateTime @default(now())
+}

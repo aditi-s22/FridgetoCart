@@ -1,10 +1,10 @@
-import { Annotation } from "@langchain/langgraph";
-import type { DetectedItem, Ingredient, Recipe, ReviewItem, UserPrefs } from "@ftc/shared";
+import type { BaseMessage } from "@langchain/core/messages";
+import { Annotation, messagesStateReducer } from "@langchain/langgraph";
+import type { Cart, DetectedItem, Ingredient, Recipe, ReviewItem, UserPrefs } from "@ftc/shared";
 import type { RetrievedDoc } from "../services/recipes";
 
 const replace = <T>(fallback: () => T) => Annotation<T>({ reducer: (_prev, next) => next, default: fallback });
 
-// Cart fields (missing, cart, messages) are added in M3.
 export const ScanState = Annotation.Root({
   scanId: Annotation<string>,
   userId: Annotation<string>,
@@ -20,6 +20,13 @@ export const ScanState = Annotation.Root({
   /** Why the last generateRecipes answer was rejected; drives the single retry. */
   recipeIssue: replace<string | null>(() => null),
   selectedRecipeId: replace<string | null>(() => null),
+  /** Non-staple ingredients of the chosen recipe the user doesn't have. */
+  missing: replace<Ingredient[]>(() => []),
+  cartId: replace<string | null>(() => null),
+  cart: replace<Cart | null>(() => null),
+  /** Cart agent conversation (system/human/AI/tool messages). */
+  messages: Annotation<BaseMessage[]>({ reducer: messagesStateReducer, default: () => [] }),
+  agentSteps: replace<number>(() => 0),
   attempts: replace<number>(() => 0),
   genAttempts: replace<number>(() => 0),
 });

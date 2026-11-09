@@ -4,6 +4,7 @@ import { ensureDemoUser, requireUser } from "./auth";
 import { env } from "./env";
 import { getGraph } from "./graph/build";
 import { errorHandler } from "./http";
+import { cartRoutes } from "./routes/cart";
 import { prefs } from "./routes/prefs";
 import { scanSteps } from "./routes/scanSteps";
 import { scans } from "./routes/scans";
@@ -18,7 +19,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 app.use("/uploads", uploads);
-app.use("/scans", requireUser, scans, scanSteps);
+app.use("/scans", requireUser, scans, scanSteps, cartRoutes);
 app.use("/prefs", requireUser, prefs);
 app.use((_req, res) => {
   res.status(404).json({ error: { code: "not_found", message: "Route not found" } });

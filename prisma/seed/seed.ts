@@ -70,9 +70,28 @@ async function seedRecipes(staples: Set<string>): Promise<void> {
   console.log(`recipes: ${n} (re)embedded`);
 }
 
+async function seedProducts(): Promise<void> {
+  const canonIds = new Set((await prisma.ingredientCanon.findMany({ select: { canonicalId: true } })).map((c) => c.canonicalId));
+  const rows = readCsvRecords(readFileSync(join(here, "products.csv"), "utf8")).map((r) => ({
+    id: `p_${r.canonicalId}`,
+    canonicalId: r.canonicalId ?? "",
+    name: r.name ?? "",
+    unit: r.unit ?? "",
+    price: Number(r.price),
+    stock: Number(r.stock),
+  }));
+  const bad = rows.filter((r) => !canonIds.has(r.canonicalId) || !Number.isFinite(r.price) || !Number.isInteger(r.stock));
+  if (bad.length) throw new Error(`products.csv has invalid rows: ${bad.map((r) => r.canonicalId).join(", ")}`);
+  await inChunks(rows, (chunk) =>
+    prisma.$transaction(chunk.map(({ id, ...data }) => prisma.product.upsert({ where: { id }, create: { id, ...data }, update: data }))),
+  );
+  console.log(`products: ${rows.length} upserted (${rows.filter((r) => r.stock === 0).length} out of stock)`);
+}
+
 async function main(): Promise<void> {
   const staples = await seedIngredients();
   await seedRecipes(staples);
+  await seedProducts();
 }
 
 main()

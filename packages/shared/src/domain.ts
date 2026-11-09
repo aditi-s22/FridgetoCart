@@ -68,21 +68,61 @@ export const GeneratedRecipes = z.object({
 });
 export type GeneratedRecipes = z.infer<typeof GeneratedRecipes>;
 
+export const DeepLinks = z.object({ blinkit: z.string().url(), zepto: z.string().url() });
+export type DeepLinks = z.infer<typeof DeepLinks>;
+
 export const CartItem = z.object({
   productId: z.string(),
+  canonicalId: z.string(),
   name: z.string(),
+  /** Pack size, e.g. "500 g" */
+  unit: z.string(),
+  /** Number of packs */
   qty: z.number().int().positive(),
+  /** Price per pack, ₹ */
   price: z.number().nonnegative(),
-  deepLinks: z.object({ blinkit: z.string().url(), zepto: z.string().url() }),
+  deepLinks: DeepLinks,
 });
 export type CartItem = z.infer<typeof CartItem>;
 
-export const Cart = z.object({
+/** A cart as the store returns it. */
+export const StoreCart = z.object({
   id: z.string(),
   items: z.array(CartItem),
   total: z.number().nonnegative(),
 });
+export type StoreCart = z.infer<typeof StoreCart>;
+
+/** A missing ingredient the store couldn't supply; the user can still buy it via deep links. */
+export const UnavailableItem = z.object({
+  canonicalId: z.string(),
+  name: z.string(),
+  reason: z.enum(["out_of_stock", "not_found"]),
+  deepLinks: DeepLinks,
+});
+export type UnavailableItem = z.infer<typeof UnavailableItem>;
+
+export const Cart = StoreCart.extend({ unavailable: z.array(UnavailableItem) });
 export type Cart = z.infer<typeof Cart>;
+
+export const StoreProduct = z.object({
+  id: z.string(),
+  canonicalId: z.string(),
+  name: z.string(),
+  unit: z.string(),
+  price: z.number(),
+  stock: z.number().int(),
+});
+export type StoreProduct = z.infer<typeof StoreProduct>;
+
+export const StockInfo = z.object({ productId: z.string(), stock: z.number().int(), inStock: z.boolean() });
+export type StockInfo = z.infer<typeof StockInfo>;
+
+/** Search deep links (generated, not scraped). */
+export function deepLinksFor(name: string): DeepLinks {
+  const q = encodeURIComponent(name);
+  return { blinkit: `https://blinkit.com/s/?q=${q}`, zepto: `https://www.zeptonow.com/search?query=${q}` };
+}
 
 export const ScanStatus = z.enum([
   "detecting",

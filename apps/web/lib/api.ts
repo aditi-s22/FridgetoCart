@@ -1,5 +1,6 @@
 import { ApiError } from "@ftc/shared";
 import type {
+  Cart,
   CreateScanResponse,
   Ingredient,
   PickResponse,
@@ -35,13 +36,20 @@ export const api = {
     call<ReviewResponse>(`/scans/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ items }) }),
   pick: (id: string, recipeId: string) =>
     call<PickResponse>(`/scans/${encodeURIComponent(id)}/pick`, { method: "POST", body: JSON.stringify({ recipeId }) }),
+  setCartQty: (id: string, productId: string, qty: number) =>
+    call<Cart>(`/scans/${encodeURIComponent(id)}/cart/items/${encodeURIComponent(productId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ qty }),
+    }),
   getPrefs: () => call<UserPrefs>("/prefs"),
   putPrefs: (prefs: UserPrefs) => call<UserPrefs>("/prefs", { method: "PUT", body: JSON.stringify(prefs) }),
 };
 
 /** The screen a scan should be shown on, so reopening a scan lands on its saved step. */
-export function screenFor(scan: ScanView): "review" | "recipes" {
-  return scan.status === "awaiting_review" || scan.status === "detecting" ? "review" : "recipes";
+export function screenFor(scan: ScanView): "review" | "recipes" | "cart" {
+  if (scan.status === "awaiting_review" || scan.status === "detecting") return "review";
+  if (scan.selectedRecipeId && (scan.status === "done" || scan.status === "building_cart")) return "cart";
+  return "recipes";
 }
 
 export async function uploadImage(blob: Blob): Promise<string> {

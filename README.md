@@ -1,17 +1,17 @@
 # FridgeToCart
 
 Snap your fridge → get meals you can cook now → one-tap cart for whatever's missing.
-See [PRD.md](PRD.md) for the full spec. **Status: M2 (recipes + human-in-the-loop).**
+See [PRD.md](PRD.md) for the full spec. **Status: M3 (mock store + cart agent).**
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `apps/web` | Next.js UI (upload, review, recipes screens) on :3000 |
+| `apps/web` | Next.js UI (upload, review, recipes, cart screens) on :3000 |
 | `apps/api` | Express + LangGraph on :4000 |
-| `apps/store` | Mock grocery service on :4100 (placeholder until M3) |
+| `apps/store` | Mock grocery store on :4100: product search, stock, idempotent carts |
 | `packages/shared` | Zod schemas + types shared by every app |
-| `prisma/` | Schema and seed data (241 ingredients, 500 recipes) |
+| `prisma/` | Schema and seed data (241 ingredients, 500 recipes, 237 products) |
 | `scripts/` | `prepare-recipes` (dataset → `recipes.csv`), `compare-vision` |
 
 ## Run locally
@@ -51,6 +51,8 @@ Open http://localhost:3000, take or pick a photo, and press **Scan**.
 
 ```
 detectItems → normalize → humanReview ⏸ → retrieveRecipes → generateRecipes (↺ once) → pickRecipe ⏸
+  → diffMissing → (nothing missing → END)
+                → cartAgent ⇄ tools (searchProduct, checkStock, addToCart; ≤ 10 turns) → finalizeCart → END
 ```
 
 - **Pauses** are LangGraph `interrupt()`s saved by the Postgres checkpointer (`thread_id = scanId`),
@@ -67,6 +69,16 @@ detectItems → normalize → humanReview ⏸ → retrieveRecipes → generateRe
 - **Staples** (`tags` contains `staple`: salt, water, oil, sugar, haldi and dry spices) are assumed to
   be in the kitchen: never shown as missing, never added to the cart. A fridge photo can't see the
   spice shelf. The review screen offers one-tap chips for cupboard items like rice and atta.
+- **Cart**: `diffMissing` takes the chosen recipe's ingredients minus what the user has, minus
+  staples (no LLM). `cartAgent` is the LLM bound to the three store tools; it creates the cart on its
+  first turn, and works in parallel (all searches, then all stock checks, then all adds), so a cart
+  usually takes 3–4 turns. `finalizeCart` then checks the store's cart against the missing list:
+  it removes off-list products, adds anything the agent skipped that is in stock, and puts
+  out-of-stock or unknown items in `cart.unavailable` with Blinkit/Zepto search links. So every
+  missing item is either in the cart or has a link, even if the model is down.
+- **No duplicates**: the store *sets* a line's quantity (upsert on `(cartId, productId)`) and replays
+  the stored response for a repeated `Idempotency-Key`. The agent's key is deterministic
+  (`agent:<productId>:<qty>`), so a retried tool call, or a run resumed after a crash, never adds twice.
 - **Diets** come from ingredient tags (`nonveg`, `egg`, `nojain`). Each recipe stores every diet that
   can eat it, e.g. a dish with onion is `veg|egg|nonveg` but not `jain`.
 
@@ -115,9 +127,24 @@ resize large originals first if you want costs that match production.
 | POST | `/uploads/presign` | `{contentType}` → `{uploadUrl, imageUrl}` |
 | POST | `/scans` | `{imageUrl}` → `{scanId, status, items}`; runs to the review pause |
 | POST | `/scans/:id/review` | `{items: Ingredient[]}` → `{status, recipes}`; runs to the pick pause |
-| POST | `/scans/:id/pick` | `{recipeId}` → `{status, cart}` (`cart` is null until M3) |
-| GET | `/scans/:id` | items, confirmed items, recipes and status from the checkpoint |
+| POST | `/scans/:id/pick` | `{recipeId}` → `{status, cart}`; builds the cart (`cart` is null if nothing is missing) |
+| PUT | `/scans/:id/cart/items/:productId` | `{qty}` (0–20, 0 removes) → cart; the qty stepper |
+| GET | `/scans/:id` | items, confirmed items, recipes, status (from the checkpoint) and the live cart |
 | GET | `/scans` | the user's past scans |
 | GET/PUT | `/prefs` | `{diet, avoid, maxTimeMins}` |
 
-Errors are `{error: {code, message}}`. Auth is stubbed with a fixed `demo-user`.
+Errors are `{error: {code, message}}`. Auth is stubbed with a fixed `demo-user`. If the API dies
+mid-run, repeating `POST /review` or `POST /pick` finishes the run from the last checkpoint.
+
+## Store API (apps/store)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/products?q=` | fuzzy search over product names and ingredient names/synonyms (Hindi too) |
+| GET | `/products/:id/stock` | `{productId, stock, inStock}` |
+| POST | `/carts` | `{scanId}` → cart; one cart per scan |
+| POST | `/carts/:id/items` | `{productId, qty}` + `Idempotency-Key` header; sets qty (0 removes), 409 if out of stock |
+| GET | `/carts/:id` | items with deep links, total |
+
+Products are a demo catalogue with realistic quick-commerce prices (`prisma/seed/products.csv`);
+five niche items start out of stock to exercise the fallback links. There is no checkout.

@@ -100,9 +100,21 @@ importers:
 
   apps/store:
     dependencies:
+      '@ftc/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
+      '@prisma/client':
+        specifier: ^6.19.3
+        version: 6.19.3(prisma@6.19.3(typescript@7.0.2))(typescript@7.0.2)
+      dotenv:
+        specifier: ^18.0.10
+        version: 18.0.10
       express:
         specifier: ^5.3.0
         version: 5.3.0
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@types/express':
         specifier: ^5.0.6
@@ -116,6 +128,9 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vitest:
+        specifier: ^5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(vite@8.3.7(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   apps/web:
     dependencies:

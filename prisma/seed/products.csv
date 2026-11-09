@@ -1,0 +1,238 @@
+canonicalId,name,unit,price,stock
+tomato,Tomato (Hybrid),500 g,24,180
+onion,Onion,1 kg,42,220
+shallots,Sambar Onion,250 g,38,60
+spring_onion,Spring Onion,1 bunch,22,50
+potato,Potato,1 kg,38,200
+sweet_potato,Sweet Potato,500 g,45,40
+garlic,Garlic,100 g,32,150
+ginger,Ginger,100 g,22,140
+ginger_garlic_paste,Ginger Garlic Paste,200 g,49,90
+green_chilli,Green Chilli,100 g,12,200
+coriander_leaves,Coriander Leaves,1 bunch,15,160
+mint,Mint Leaves,1 bunch,15,90
+curry_leaves,Curry Leaves,1 bunch,10,120
+dill_leaves,Dill Leaves (Suva),1 bunch,25,25
+spinach,Spinach (Palak),250 g,25,80
+fenugreek_leaves,Methi Leaves,1 bunch,20,60
+amaranth_leaves,Amaranth Leaves,1 bunch,22,30
+drumstick_leaves,Drumstick Leaves,100 g,30,20
+radish_greens,Radish Greens,1 bunch,15,20
+colocasia_leaves,Colocasia Leaves,1 bunch,35,15
+cauliflower,Cauliflower,1 pc (500-700 g),40,70
+broccoli,Broccoli,250 g,65,40
+cabbage,Cabbage,1 pc (500-800 g),32,80
+carrot,Carrot (Orange),500 g,35,120
+peas,Green Peas (Frozen),500 g,85,110
+capsicum,Capsicum (Green),250 g,30,100
+okra,Bhindi (Lady Finger),250 g,28,90
+brinjal,Brinjal (Baingan),500 g,35,70
+bottle_gourd,Bottle Gourd (Lauki),1 pc (700-900 g),36,60
+ridge_gourd,Ridge Gourd,500 g,40,40
+snake_gourd,Snake Gourd,500 g,38,25
+bitter_gourd,Bitter Gourd (Karela),250 g,28,50
+ash_gourd,Ash Gourd,1 kg,45,20
+tindora,Ivy Gourd (Tindora),250 g,30,35
+tinda,Apple Gourd (Tinda),250 g,35,25
+chayote,Chayote (Chow Chow),500 g,40,20
+cucumber,Cucumber,500 g,30,100
+zucchini,Zucchini (Green),250 g,55,30
+lemon,Lemon,4 pcs,20,200
+beans,French Beans,250 g,32,80
+cluster_beans,Cluster Beans (Gawar),250 g,30,30
+broad_beans,Broad Beans (Papdi),250 g,40,25
+yard_long_beans,Yard Long Beans,250 g,30,25
+mushroom,Button Mushroom,200 g,50,60
+sweet_corn,Sweet Corn Kernels (Frozen),500 g,95,70
+baby_corn,Baby Corn,200 g,45,40
+beetroot,Beetroot,500 g,35,60
+radish,Radish (Mooli),500 g,25,50
+pumpkin,Red Pumpkin,500 g,30,40
+elephant_yam,Elephant Yam (Suran),500 g,45,25
+colocasia,Arbi (Colocasia),250 g,30,30
+raw_banana,Raw Banana,2 pcs,30,40
+banana_stem,Banana Stem,1 pc,35,10
+lotus_stem,Lotus Stem,250 g,60,0
+raw_papaya,Raw Papaya,1 pc (~800 g),40,15
+drumstick,Drumstick,250 g,35,40
+celery,Celery,200 g,60,15
+lettuce,Iceberg Lettuce,1 pc,55,30
+paneer,Fresh Paneer,200 g,90,120
+tofu,Tofu (Firm),200 g,80,40
+milk,Toned Milk,500 ml,28,300
+flavored_milk,Flavoured Milk (Kesar Badam),180 ml,30,80
+curd,Curd (Dahi),400 g,45,200
+buttermilk,Masala Chaas,200 ml,15,100
+lassi,Sweet Lassi,200 ml,25,60
+butter,Salted Butter,100 g,58,150
+ghee,Cow Ghee,500 ml,330,80
+cheese,Cheese Slices,200 g,140,90
+cream,Fresh Cream,200 ml,70,70
+milk_powder,Dairy Whitener,200 g,105,40
+egg,Farm Eggs,6 pcs,54,250
+chicken,Chicken Curry Cut,500 g,180,70
+mutton,Mutton Curry Cut,500 g,450,25
+fish,Rohu Fish Curry Cut,500 g,220,30
+prawns,Prawns (Cleaned),250 g,240,20
+bread,Whole Wheat Bread,400 g,50,120
+bread_crumbs,Bread Crumbs,200 g,55,30
+rice,Basmati Rice,1 kg,135,150
+rice_flour,Rice Flour,500 g,40,60
+rice_rava,Idli Rava,500 g,45,40
+atta,Whole Wheat Atta,5 kg,260,120
+maida,Maida,1 kg,55,80
+besan,Besan,500 g,62,100
+corn_flour,Corn Flour,100 g,25,70
+ragi_flour,Ragi Flour,500 g,55,40
+jowar_flour,Jowar Flour,500 g,55,35
+bajra_flour,Bajra Flour,500 g,50,30
+makki_atta,Makki Ka Atta,500 g,50,30
+buckwheat_flour,Kuttu Atta,500 g,95,20
+rajgira_flour,Rajgira Atta,500 g,110,0
+sattu,Chana Sattu,500 g,75,30
+suji,Suji (Rava),500 g,38,100
+broken_wheat,Dalia (Broken Wheat),500 g,45,50
+oats,Rolled Oats,1 kg,190,70
+quinoa,Quinoa,500 g,240,25
+foxtail_millet,Foxtail Millet,500 g,90,20
+barnyard_millet,Barnyard Millet (Samak),500 g,95,20
+sabudana,Sabudana,500 g,60,50
+poha,Poha (Medium),500 g,42,100
+puffed_rice,Puffed Rice (Murmura),200 g,25,60
+vermicelli,Roasted Vermicelli,400 g,45,60
+toor_dal,Toor Dal,1 kg,175,120
+moong_dal,Moong Dal (Yellow),500 g,75,100
+green_moong,Green Moong (Whole),500 g,80,50
+moong_sprouts,Moong Sprouts,200 g,35,40
+masoor_dal,Masoor Dal,500 g,65,80
+urad_dal,Urad Dal (Split),500 g,85,80
+black_urad_dal,Urad Dal (Whole Black),500 g,90,40
+chana_dal,Chana Dal,500 g,60,90
+roasted_chana_dal,Roasted Chana Dal,200 g,40,40
+chana,Kabuli Chana,500 g,85,80
+kala_chana,Kala Chana,500 g,60,50
+green_chickpeas,Hara Chana (Frozen),400 g,90,20
+rajma,Rajma (Red),500 g,95,70
+lobia,Lobia,500 g,70,30
+horse_gram,Horse Gram (Kulith),500 g,65,15
+moth_beans,Moth Beans (Matki),500 g,70,20
+soy_chunks,Soya Chunks,200 g,45,70
+idli_batter,Idli & Dosa Batter,1 kg,85,60
+apple,Apple (Shimla),4 pcs (~600 g),130,90
+banana,Banana (Robusta),6 pcs,48,150
+mango,Mango (Alphonso),2 pcs,120,30
+orange,Orange (Nagpur),1 kg,90,60
+grapes,Green Grapes,500 g,70,50
+pomegranate,Pomegranate,2 pcs (~500 g),110,60
+pineapple,Pineapple,1 pc,80,25
+papaya,Papaya,1 pc (~1 kg),55,30
+watermelon,Watermelon,1 pc (~2 kg),75,20
+guava,Guava,500 g,60,40
+strawberries,Strawberries,200 g,99,25
+amla,Amla,250 g,40,30
+dates,Seedless Dates,250 g,110,50
+raisins,Raisins,200 g,95,60
+cashews,Cashew Nuts (W320),200 g,220,70
+almonds,Almonds,200 g,210,70
+walnuts,Walnut Kernels,200 g,320,30
+pistachios,Pistachios (Salted),200 g,330,25
+peanuts,Raw Peanuts,500 g,90,80
+makhana,Makhana,100 g,120,40
+coconut,Coconut (Fresh),1 pc,45,60
+coconut_milk,Coconut Milk,200 ml,70,40
+tamarind,Tamarind (Seedless),200 g,55,60
+kokum,Kokum,100 g,80,0
+jaggery,Jaggery (Gur),500 g,65,70
+honey,Honey,250 g,145,60
+peanut_butter,Peanut Butter (Crunchy),340 g,180,40
+ketchup,Tomato Ketchup,500 g,110,90
+red_chilli_sauce,Red Chilli Sauce,200 g,60,40
+chutney,Green Chutney,200 g,55,30
+pickle,Mango Pickle,400 g,130,60
+jam,Mixed Fruit Jam,500 g,150,40
+mayonnaise,Eggless Mayonnaise,250 g,99,60
+sev,Nylon Sev,200 g,55,50
+boondi,Khari Boondi,200 g,50,40
+papad,Urad Papad,200 g,60,50
+noodles,Instant Noodles (4 pack),280 g,60,120
+pasta,Penne Pasta,500 g,99,60
+juice,Orange Juice,1 l,125,60
+soft_drink,Cola,750 ml,40,150
+chocolate,Milk Chocolate,50 g,50,100
+ice_cream,Vanilla Ice Cream,700 ml,190,30
+vegetable_stock,Vegetable Stock Cubes,6 cubes,60,25
+roti,Ready-to-cook Chapati,10 pcs,75,40
+salt,Iodised Salt,1 kg,28,300
+oil,Sunflower Oil,1 l,165,200
+sugar,Sugar,1 kg,52,200
+turmeric,Turmeric Powder,100 g,30,200
+cumin_seeds,Jeera (Cumin Seeds),100 g,65,180
+cumin_powder,Jeera Powder,100 g,70,100
+red_chilli_powder,Red Chilli Powder,100 g,45,180
+dry_red_chilli,Dry Red Chilli,100 g,50,100
+red_chilli_flakes,Chilli Flakes,50 g,40,50
+mustard_seeds,Mustard Seeds (Rai),100 g,25,150
+mustard_powder,Mustard Powder,100 g,45,20
+hing,Hing (Asafoetida),50 g,75,120
+garam_masala,Garam Masala,100 g,85,150
+coriander_powder,Coriander Powder,100 g,35,150
+coriander_seeds,Coriander Seeds,100 g,30,60
+black_pepper,Black Pepper (Whole),50 g,75,90
+methi_seeds,Methi Seeds,100 g,25,70
+kasuri_methi,Kasuri Methi,25 g,30,80
+fennel_seeds,Saunf (Fennel Seeds),100 g,40,80
+ajwain,Ajwain,50 g,35,70
+kalonji,Kalonji,50 g,30,40
+cinnamon,Cinnamon Sticks,50 g,55,60
+cloves,Cloves (Laung),50 g,85,60
+cardamom,Green Cardamom,25 g,95,70
+black_cardamom,Black Cardamom,25 g,70,0
+bay_leaf,Bay Leaves,25 g,20,80
+star_anise,Star Anise,25 g,45,30
+nutmeg,Nutmeg (Whole),25 g,60,20
+mace,Mace (Javitri),10 g,70,15
+kala_jeera,Shahi Jeera,50 g,80,20
+poppy_seeds,Poppy Seeds (Khus Khus),50 g,90,25
+sesame_seeds,White Sesame Seeds,100 g,40,60
+saffron,Saffron (Kesar),1 g,190,20
+amchur,Amchur Powder,100 g,55,60
+anardana,Anardana Powder,100 g,70,20
+dry_ginger_powder,Sonth (Dry Ginger) Powder,50 g,50,20
+chaat_masala,Chaat Masala,100 g,60,100
+sambar_powder,Sambar Powder,100 g,60,80
+rasam_powder,Rasam Powder,100 g,55,40
+goda_masala,Goda Masala,100 g,80,15
+panch_phoran,Panch Phoran,100 g,50,15
+chana_masala_powder,Chana Masala,100 g,70,40
+curry_powder,Curry Powder,100 g,65,20
+idli_podi,Idli Podi,200 g,90,30
+black_salt,Black Salt (Kala Namak),100 g,25,60
+baking_soda,Baking Soda,100 g,30,60
+baking_powder,Baking Powder,100 g,45,40
+eno,Eno Fruit Salt (6 sachets),30 g,60,50
+vinegar,White Vinegar,610 ml,50,40
+soy_sauce,Soy Sauce,200 g,60,50
+oregano,Oregano,10 g,50,40
+stone_flower,Stone Flower (Kalpasi),25 g,60,0
+tea_leaves,Tea Leaves,250 g,150,100
+instant_coffee,Instant Coffee,50 g,180,60
+rose_water,Rose Water,250 ml,70,25
+pointed_gourd,Parwal (Pointed Gourd),250 g,40,25
+sponge_gourd,Sponge Gourd (Turiya),500 g,40,20
+knol_khol,Knol Khol,500 g,45,15
+mustard_greens,Sarson Saag,1 bunch,40,20
+jackfruit,Raw Jackfruit,500 g,60,15
+khoya,Khoya (Mawa),200 g,110,20
+condensed_milk,Condensed Milk,400 g,150,40
+dry_fruits,Mixed Dry Fruits,200 g,250,40
+chia_seeds,Chia Seeds,150 g,99,40
+flax_seeds,Flax Seeds,200 g,60,30
+pumpkin_seeds,Pumpkin Seeds,150 g,140,25
+water_chestnut,Water Chestnut (Singhara),250 g,60,15
+tulsi,Tulsi Leaves,1 bunch,25,20
+parsley,Parsley,1 bunch,40,15
+cocoa_powder,Cocoa Powder,100 g,110,30
+paprika,Paprika Powder,50 g,80,20
+pav_bhaji_masala,Pav Bhaji Masala,100 g,70,60
+kashmiri_masala,Kashmiri Mirch Powder,100 g,70,50
+vanilla_extract,Vanilla Essence,20 ml,45,30

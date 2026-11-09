@@ -19,7 +19,11 @@ export default function RecipesPage() {
   useEffect(() => {
     api
       .getScan(id)
-      .then((s) => (screenFor(s) === "review" ? router.replace(`/scans/${id}/review`) : setScan(s)))
+      .then((s) => {
+        const screen = screenFor(s);
+        if (screen === "recipes") setScan(s);
+        else router.replace(`/scans/${id}/${screen}`);
+      })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Couldn't load scan"));
   }, [id, router]);
 
@@ -27,11 +31,10 @@ export default function RecipesPage() {
     setPicking(recipeId);
     setError(null);
     try {
-      const { status } = await api.pick(id, recipeId);
-      setScan((s) => (s ? { ...s, status, selectedRecipeId: recipeId } : s));
+      await api.pick(id, recipeId);
+      router.push(`/scans/${id}/cart`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't pick that recipe");
-    } finally {
       setPicking(null);
     }
   }
@@ -46,11 +49,9 @@ export default function RecipesPage() {
     <div className="space-y-6">
       <StepProgress status={scan.status} />
       <div>
-        <h1 className="text-2xl font-bold">{picked ? "Good choice" : "What you can cook"}</h1>
+        <h1 className="text-2xl font-bold">What you can cook</h1>
         <p className="mt-1 text-stone-600">
-          {picked
-            ? "Your cart for the missing items is coming in the next update."
-            : `Based on ${scan.confirmed.length} items. Missing ingredients are in red.`}
+          {picking ? "Building your cart…" : `Based on ${scan.confirmed.length} items. Missing ingredients are in red.`}
         </p>
       </div>
 

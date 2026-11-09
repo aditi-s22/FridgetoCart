@@ -35,7 +35,8 @@ export default function ReviewPage() {
     api
       .getScan(id)
       .then((s) => {
-        if (screenFor(s) === "recipes") return router.replace(`/scans/${id}/recipes`);
+        const screen = screenFor(s);
+        if (screen !== "review") return router.replace(`/scans/${id}/${screen}`);
         setScan(s);
         setItems(s.items);
       })
