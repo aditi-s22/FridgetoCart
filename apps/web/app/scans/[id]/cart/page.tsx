@@ -1,7 +1,12 @@
 "use client";
 
 import type { Cart, ScanView } from "@ftc/shared";
-import { Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  PackageOpen,
+  ShoppingBasket,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,7 +31,9 @@ export default function CartPage() {
         setScan(s);
         setCart(s.cart);
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Couldn't load cart"));
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err.message : "Couldn't load cart"),
+      );
   }, [id, router]);
 
   async function setQty(productId: string, qty: number) {
@@ -35,14 +42,29 @@ export default function CartPage() {
     try {
       setCart(await api.setCartQty(id, productId, qty));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't update the cart");
+      setError(
+        err instanceof Error ? err.message : "Couldn't update the cart",
+      );
     } finally {
       setBusy(null);
     }
   }
 
   if (!scan) {
-    return error ? <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p> : <Loader2 className="mx-auto mt-12 animate-spin text-stone-400" />;
+    return (
+      <div className="mx-auto max-w-2xl">
+        {error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-4 py-20">
+            <Loader2 size={32} className="animate-spin text-brand" />
+            <p className="text-sm text-stone-500">Loading your cart…</p>
+          </div>
+        )}
+      </div>
+    );
   }
 
   const recipe = scan.recipes.find((r) => r.id === scan.selectedRecipeId);
@@ -50,39 +72,104 @@ export default function CartPage() {
   const unavailable = cart?.unavailable ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <StepProgress status={scan.status} />
+
+      {/* ── Header ───────────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-bold">Your cart</h1>
-        <p className="mt-1 text-stone-600">For {recipe?.title ?? "your recipe"}.</p>
+        <h1 className="font-display text-3xl text-stone-900">
+          Your grocery cart
+        </h1>
+        <p className="mt-1 text-stone-500">
+          Missing ingredients for{" "}
+          <span className="font-medium text-stone-700">
+            {recipe?.title ?? "your recipe"}
+          </span>
+          .
+        </p>
       </div>
 
-      {!cart && <p className="rounded-lg bg-green-50 p-3 text-sm text-green-800">You already have everything. Happy cooking!</p>}
+      {/* ── All-in-pantry state ──────────────────────── */}
+      {!cart && (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-brand/20 bg-brand-muted px-6 py-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10">
+            <CheckCircle2 size={28} className="text-brand" />
+          </div>
+          <div>
+            <p className="font-semibold text-brand">You have everything!</p>
+            <p className="mt-1 text-sm text-stone-600">
+              All ingredients for {recipe?.title ?? "this recipe"} are already
+              in your fridge. Happy cooking!
+            </p>
+          </div>
+          <Link
+            href="/"
+            className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand/90"
+          >
+            New scan
+          </Link>
+        </div>
+      )}
 
+      {/* ── Cart items ───────────────────────────────── */}
       {items.length > 0 && (
-        <section className="rounded-2xl border border-stone-200 bg-white px-4">
-          <ul className="divide-y divide-stone-100">
+        <section className="rounded-3xl border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-100 px-5 py-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-700">
+              <ShoppingBasket size={15} />
+              Items to buy
+            </h2>
+          </div>
+          <ul className="divide-y divide-stone-100 px-5">
             {items.map((item) => (
-              <CartLine key={item.productId} item={item} busy={busy !== null} onQty={(qty) => setQty(item.productId, qty)} />
+              <CartLine
+                key={item.productId}
+                item={item}
+                busy={busy !== null}
+                onQty={(qty) => setQty(item.productId, qty)}
+              />
             ))}
           </ul>
-          <div className="flex items-center justify-between border-t border-stone-200 py-3 text-lg font-bold">
-            <span>Total</span>
-            <span>{rupees(cart?.total ?? 0)}</span>
+          {/* Total */}
+          <div className="sticky bottom-0 z-10 flex items-center justify-between border-t border-stone-200 bg-stone-50/95 px-5 py-4 backdrop-blur-sm sm:static">
+            <span className="font-semibold text-stone-700">Total</span>
+            <span className="text-xl font-bold text-stone-900">
+              {rupees(cart?.total ?? 0)}
+            </span>
           </div>
         </section>
       )}
-      {cart && items.length === 0 && unavailable.length === 0 && <p className="text-sm text-stone-500">Your cart is empty.</p>}
 
+      {/* ── Empty cart ───────────────────────────────── */}
+      {cart && items.length === 0 && unavailable.length === 0 && (
+        <div className="flex flex-col items-center gap-3 rounded-3xl border border-stone-200 bg-white py-10 text-center">
+          <ShoppingBasket size={28} className="text-stone-300" />
+          <p className="text-sm text-stone-500">Your cart is empty.</p>
+        </div>
+      )}
+
+      {/* ── Unavailable items ────────────────────────── */}
       {unavailable.length > 0 && (
-        <section>
-          <h2 className="mb-2 font-semibold">Not in our store — buy online</h2>
-          <ul className="divide-y divide-stone-100 rounded-2xl border border-stone-200 bg-white px-4">
+        <section className="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
+          <div className="border-b border-stone-100 px-5 py-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-700">
+              <PackageOpen size={15} />
+              Not in our demo store — buy online
+            </h2>
+          </div>
+          <ul className="divide-y divide-stone-100 px-5">
             {unavailable.map((u) => (
-              <li key={u.canonicalId} className="flex items-center justify-between gap-3 py-3">
+              <li
+                key={u.canonicalId}
+                className="flex items-center justify-between gap-3 py-4"
+              >
                 <div>
-                  <p className="font-medium">{u.name}</p>
-                  <p className="text-sm text-stone-500">{u.reason === "out_of_stock" ? "Out of stock" : "Not stocked"}</p>
+                  <p className="font-medium text-stone-900">{u.name}</p>
+                  <p className="text-xs text-stone-500">
+                    {u.reason === "out_of_stock"
+                      ? "Out of stock in demo store"
+                      : "Not stocked in demo store"}
+                  </p>
                 </div>
                 <StoreLinks links={u.deepLinks} />
               </li>
@@ -91,10 +178,23 @@ export default function CartPage() {
         </section>
       )}
 
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <p className="text-center text-xs text-stone-400">
-        Demo store: no checkout. Use the Blinkit/Zepto buttons to order. <Link href="/" className="underline">New scan</Link>
-      </p>
+      {error && (
+        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between pt-2">
+        <p className="text-xs text-stone-400">
+          Demo store — no real checkout. Use Blinkit/Zepto to order.
+        </p>
+        <Link
+          href="/"
+          className="text-sm font-medium text-brand hover:underline"
+        >
+          New scan →
+        </Link>
+      </div>
     </div>
   );
 }

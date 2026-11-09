@@ -20,6 +20,12 @@ export async function progressOf(graph: ScanGraph, scanId: string): Promise<Prog
   return { values: snap.values as Partial<ScanStateT>, pending, next: snap.tasks.map((t) => t.name) };
 }
 
+/** The pause a just-finished `invoke` stopped at, read from its output (saves a checkpoint read). */
+export function interruptOf(out: unknown): ScanInterrupt | null {
+  const list = (out as { __interrupt__?: { value: unknown }[] } | null)?.__interrupt__;
+  return (list?.[0]?.value as ScanInterrupt | undefined) ?? null;
+}
+
 /** A pending pause is the source of truth; otherwise fall back to the status stored on the Scan row. */
 export function statusOf(p: Progress, stored: ScanStatus): ScanStatus {
   if (p.pending?.type === "review_items") return "awaiting_review";

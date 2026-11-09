@@ -11,12 +11,16 @@ export const ScanState = Annotation.Root({
   imageUrl: Annotation<string>,
   prefs: Annotation<UserPrefs>,
   detected: replace<DetectedItem[]>(() => []),
+  /** Model whose detections are in `detected` (fast, or strong after low confidence). */
+  detectedBy: replace<string | null>(() => null),
   /** Normalized detections shown on the review screen. */
   items: replace<ReviewItem[]>(() => []),
   /** What the user confirmed after editing. */
   confirmed: replace<Ingredient[]>(() => []),
   retrieved: replace<RetrievedDoc[]>(() => []),
   recipes: replace<Recipe[]>(() => []),
+  /** True when recipes came from the Redis cache (retrieval and generation were skipped). */
+  recipesCached: replace<boolean>(() => false),
   /** Why the last generateRecipes answer was rejected; drives the single retry. */
   recipeIssue: replace<string | null>(() => null),
   selectedRecipeId: replace<string | null>(() => null),
@@ -29,6 +33,8 @@ export const ScanState = Annotation.Root({
   agentSteps: replace<number>(() => 0),
   attempts: replace<number>(() => 0),
   genAttempts: replace<number>(() => 0),
+  /** Nodes that ran, in order (the trace's path; kept in state because checkpoints are only written on exit). */
+  path: Annotation<string[]>({ reducer: (prev, next) => prev.concat(next), default: () => [] }),
 });
 
 export type ScanStateT = typeof ScanState.State;

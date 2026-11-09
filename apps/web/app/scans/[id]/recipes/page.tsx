@@ -1,13 +1,31 @@
 "use client";
 
 import type { ScanView } from "@ftc/shared";
-import { Loader2 } from "lucide-react";
+import { ChefHat, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { StepProgress } from "@/components/StepProgress";
 import { api, screenFor } from "@/lib/api";
+
+function RecipeSkeleton() {
+  return (
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+      <div className="h-28 bg-stone-200" />
+      <div className="space-y-3 p-5">
+        <div className="h-4 w-3/4 rounded-full bg-stone-200" />
+        <div className="h-3 w-1/2 rounded-full bg-stone-100" />
+        <div className="flex gap-2">
+          <div className="h-5 w-16 rounded-full bg-stone-100" />
+          <div className="h-5 w-20 rounded-full bg-stone-100" />
+          <div className="h-5 w-14 rounded-full bg-stone-100" />
+        </div>
+        <div className="h-10 w-full rounded-xl bg-stone-100" />
+      </div>
+    </div>
+  );
+}
 
 export default function RecipesPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +42,9 @@ export default function RecipesPage() {
         if (screen === "recipes") setScan(s);
         else router.replace(`/scans/${id}/${screen}`);
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Couldn't load scan"));
+      .catch((err: unknown) =>
+        setError(err instanceof Error ? err.message : "Couldn't load scan"),
+      );
   }, [id, router]);
 
   async function pick(recipeId: string) {
@@ -34,35 +54,79 @@ export default function RecipesPage() {
       await api.pick(id, recipeId);
       router.push(`/scans/${id}/cart`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't pick that recipe");
+      setError(
+        err instanceof Error ? err.message : "Couldn't pick that recipe",
+      );
       setPicking(null);
     }
   }
 
+  /* Loading skeleton */
   if (!scan) {
-    return error ? <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p> : <Loader2 className="mx-auto mt-12 animate-spin text-stone-400" />;
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        {error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              <Loader2 size={20} className="animate-spin text-brand" />
+              <p className="text-stone-600">Loading recipes…</p>
+            </div>
+            <div className="space-y-4">
+              <RecipeSkeleton />
+              <RecipeSkeleton />
+            </div>
+          </>
+        )}
+      </div>
+    );
   }
 
   const picked = scan.selectedRecipeId !== null;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <StepProgress status={scan.status} />
+
+      {/* ── Header ───────────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-bold">What you can cook</h1>
-        <p className="mt-1 text-stone-600">
-          {picking ? "Building your cart…" : `Based on ${scan.confirmed.length} items. Missing ingredients are in red.`}
+        <h1 className="font-display text-3xl text-stone-900">
+          What you can cook
+        </h1>
+        <p className="mt-1 text-stone-500">
+          {picking
+            ? "Building your cart…"
+            : `Based on ${scan.confirmed.length} confirmed ingredient${scan.confirmed.length !== 1 ? "s" : ""}.`}
         </p>
       </div>
 
+      {/* ── Empty state ──────────────────────────────── */}
       {scan.recipes.length === 0 && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-          No recipes match your diet, time limit and items. Try adding a few more items.{" "}
-          <Link href="/" className="underline">Start a new scan</Link>
-        </p>
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100">
+            <ChefHat size={26} className="text-amber-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-amber-900">No recipes found</p>
+            <p className="mt-1 text-sm text-amber-700">
+              No recipes match your diet, time limit, and ingredients.
+              Try adding more items or adjusting your preferences.
+            </p>
+          </div>
+          <Link
+            href="/"
+            className="rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700"
+          >
+            Start a new scan
+          </Link>
+        </div>
       )}
 
-      <div className="space-y-4">
+      {/* ── Recipe cards ─────────────────────────────── */}
+      <div className="space-y-5">
         {scan.recipes.map((r) => (
           <RecipeCard
             key={r.id}
@@ -74,9 +138,15 @@ export default function RecipesPage() {
           />
         ))}
       </div>
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+
+      {error && (
+        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
       <p className="text-center text-xs text-stone-400">
-        Recipes adapted from the 6000+ Indian Food Recipes Dataset (Archana&apos;s Kitchen), CC BY 4.0.
+        Recipes adapted from the Indian Food Recipes Dataset (Archana&apos;s Kitchen), CC BY 4.0.
       </p>
     </div>
   );

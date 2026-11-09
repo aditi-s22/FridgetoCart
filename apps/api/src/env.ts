@@ -14,6 +14,8 @@ const Env = z.object({
   API_BASE_URL: z.string().url().default("http://localhost:4000"),
   WEB_ORIGIN: z.string().default("http://localhost:3000"),
   STORE_BASE_URL: z.string().url().default("http://localhost:4100"),
+  /** Shared with apps/web, which signs the API tokens. */
+  API_JWT_SECRET: z.string().min(32, "API_JWT_SECRET must be at least 32 characters"),
   VISION_MODEL_FAST: z.string().default("google:gemini-3.5-flash-lite"),
   VISION_MODEL_STRONG: z.string().default("google:gemini-3.5-flash"),
   TEXT_MODEL: z.string().default("google:gemini-3.5-flash-lite"),

@@ -39,7 +39,12 @@ vi.mock("../services/storeClient", () => ({
     }),
   },
 }));
-vi.mock("../services/llm", () => ({ structured: vi.fn(), embed: vi.fn(async () => [[0.1, 0.2]]), agentStep: vi.fn() }));
+vi.mock("../services/llm", () => ({ structured: vi.fn(), embed: vi.fn(async () => [[0.1, 0.2]]), agentStep: vi.fn(), modelOf: (r: string) => r }));
+vi.mock("../services/cache", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/cache")>()),
+  getCachedRecipes: vi.fn(async () => null),
+  setCachedRecipes: vi.fn(async () => undefined),
+}));
 vi.mock("../services/storage", () => ({ readImageAsDataUrl: vi.fn(async () => "data:image/jpeg;base64,AAAA") }));
 vi.mock("../services/normalizer", async (importOriginal) => {
   const real = await importOriginal<typeof import("../services/normalizer")>();

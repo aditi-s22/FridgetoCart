@@ -1,6 +1,6 @@
 import { type BaseMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { DetectionResult } from "@ftc/shared";
-import { structured } from "../../services/llm";
+import { DetectionResult, LOW_CONFIDENCE } from "@ftc/shared";
+import { modelOf, structured } from "../../services/llm";
 import { readImageAsDataUrl } from "../../services/storage";
 import type { ScanStateT, ScanUpdate } from "../state";
 
@@ -24,6 +24,16 @@ export function detectionMessages(imageDataUrl: string): BaseMessage[] {
   ];
 }
 
+export function avgConfidence(state: Pick<ScanStateT, "detected">): number {
+  const items = state.detected;
+  return items.length ? items.reduce((s, i) => s + i.confidence, 0) / items.length : 0;
+}
+
+/** Edge after detectItems: a blurry/dark photo (low average confidence, or nothing found) goes to the strong model. */
+export function needsStrong(state: ScanStateT): "detectStrong" | "normalize" {
+  return avgConfidence(state) < LOW_CONFIDENCE && state.attempts < 2 ? "detectStrong" : "normalize";
+}
+
 export async function detectItems(state: ScanStateT): Promise<ScanUpdate> {
   const image = await readImageAsDataUrl(state.imageUrl);
   const result = await structured({
@@ -32,5 +42,5 @@ export async function detectItems(state: ScanStateT): Promise<ScanUpdate> {
     schema: DetectionResult,
     messages: detectionMessages(image),
   });
-  return { detected: result.items, attempts: state.attempts + 1 };
+  return { detected: result.items, attempts: state.attempts + 1, detectedBy: modelOf("visionFast") };
 }

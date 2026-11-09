@@ -48,10 +48,12 @@ export const BASE_STATE: ScanStateT = {
   imageUrl: "x",
   prefs: PREFS,
   detected: [],
+  detectedBy: null,
   items: [],
   confirmed: [],
   retrieved: [],
   recipes: [],
+  recipesCached: false,
   recipeIssue: null,
   selectedRecipeId: null,
   missing: [],
@@ -61,4 +63,5 @@ export const BASE_STATE: ScanStateT = {
   agentSteps: 0,
   attempts: 0,
   genAttempts: 0,
+  path: [],
 };

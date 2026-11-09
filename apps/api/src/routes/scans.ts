@@ -1,12 +1,14 @@
 import { CreateScanRequest } from "@ftc/shared";
-import type { CreateScanResponse, ScanView } from "@ftc/shared";
+import type { CreateScanResponse, ScanSummary, ScanView } from "@ftc/shared";
 import { Router } from "express";
 import { userIdOf } from "../auth";
 import { prisma } from "../db";
-import { getGraph, threadOf } from "../graph/build";
+import { getGraph, runOf } from "../graph/build";
 import { progressOf, statusOf } from "../graph/progress";
 import { AppError, parse } from "../http";
+import { enforceScanLimit } from "../services/rateLimit";
 import { isOwnImageUrl } from "../services/storage";
+import { withScan } from "../services/trace";
 import { liveCart } from "./cart";
 import { prefsOf } from "./prefs";
 
@@ -23,13 +25,13 @@ scans.post("/", async (req, res) => {
   const { imageUrl } = parse(CreateScanRequest, req.body);
   if (!isOwnImageUrl(imageUrl)) throw new AppError(400, "bad_image_url", "Upload the image via /uploads/presign first");
 
-  const prefs = await prefsOf(userId);
+  const [, prefs] = await Promise.all([enforceScanLimit(userId), prefsOf(userId)]);
   const scan = await prisma.scan.create({ data: { userId, imageUrl, status: "detecting" } });
   const graph = await getGraph();
   const started = Date.now();
   try {
     // Runs until the first pause (humanReview).
-    const out = await graph.invoke({ scanId: scan.id, userId, imageUrl, prefs }, threadOf(scan.id));
+    const out = await withScan(scan.id, () => graph.invoke({ scanId: scan.id, userId, imageUrl, prefs }, runOf(scan.id)));
     await prisma.scan.update({ where: { id: scan.id }, data: { status: "awaiting_review" } });
     console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: "detect", latencyMs: Date.now() - started }));
     const body: CreateScanResponse = { scanId: scan.id, status: "awaiting_review", items: out.items };
@@ -45,9 +47,21 @@ scans.get("/", async (_req, res) => {
     where: { userId: userIdOf(res.locals) },
     orderBy: { createdAt: "desc" },
     take: 50,
-    select: { id: true, status: true, imageUrl: true, createdAt: true },
+    select: { id: true, status: true, imageUrl: true, createdAt: true, selectedRecipeId: true },
   });
-  res.json({ scans: rows.map(({ id, ...r }) => ({ scanId: id, ...r, createdAt: r.createdAt.toISOString() })) });
+  // A recipe's id is its source doc's id, so titles come from one cheap lookup (no checkpoint reads).
+  const ids = rows.flatMap((r) => (r.selectedRecipeId ? [r.selectedRecipeId] : []));
+  const docs = ids.length ? await prisma.recipeDoc.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } }) : [];
+  const titles = new Map(docs.map((d) => [d.id, d.title]));
+  const scansOut: ScanSummary[] = rows.map((r) => ({
+    scanId: r.id,
+    status: r.status,
+    imageUrl: r.imageUrl,
+    createdAt: r.createdAt.toISOString(),
+    selectedRecipeId: r.selectedRecipeId,
+    recipeTitle: r.selectedRecipeId ? (titles.get(r.selectedRecipeId) ?? null) : null,
+  }));
+  res.json({ scans: scansOut });
 });
 
 scans.get("/:id", async (req, res) => {

@@ -61,3 +61,20 @@ export type SetCartQtyRequest = z.infer<typeof SetCartQtyRequest>;
 export const CreateCartRequest = z.object({ scanId: z.string().min(1) });
 export const AddCartItemRequest = z.object({ productId: z.string().min(1), qty: z.number().int().min(0).max(20) });
 export type AddCartItemRequest = z.infer<typeof AddCartItemRequest>;
+
+/** Claims of the short-lived token the web app mints for the API (HS256, shared secret). */
+export const API_TOKEN_ISSUER = "fridgetocart-web";
+export const API_TOKEN_AUDIENCE = "fridgetocart-api";
+export const ApiTokenClaims = z.object({ sub: z.string().min(1), email: z.string().email(), name: z.string().optional() });
+export type ApiTokenClaims = z.infer<typeof ApiTokenClaims>;
+
+export const ScanSummary = z.object({
+  scanId: z.string(),
+  status: ScanStatus,
+  imageUrl: z.string(),
+  createdAt: z.string(),
+  selectedRecipeId: z.string().nullable(),
+  /** Title of the picked recipe's source doc, if a recipe was picked. */
+  recipeTitle: z.string().nullable(),
+});
+export type ScanSummary = z.infer<typeof ScanSummary>;

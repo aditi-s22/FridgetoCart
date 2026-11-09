@@ -1,10 +1,74 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #16a34a;
+  /* ── Brand palette ───────────────────────────────── */
+  --color-brand: #2D6A4F;
+  --color-brand-light: #52B788;
+  --color-brand-muted: #D8F3DC;
   --color-brand-foreground: #ffffff;
+
+  /* ── Surface & background ────────────────────────── */
+  --color-ivory: #FAF7F2;
+  --color-surface: #ffffff;
+  --color-surface-raised: #F5F0E8;
+
+  /* ── Text & status ───────────────────────────────── */
+  --color-ink: #1A1A1A;
+  --color-ink-muted: #6B7280;
+  --color-warn: #D97706;
+  --color-danger: #DC2626;
+
+  /* ── Motion ──────────────────────────────────────── */
+  --animate-pop-in: pop-in 180ms ease-out;
+  --animate-fade-up: fade-up 200ms ease-out;
+
+  /* ── Typography scale ────────────────────────────── */
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-display), Georgia, serif;
 }
 
+/* ── Base ──────────────────────────────────────────── */
 body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+  background-color: #FAF7F2;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  @apply antialiased;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* ── Smooth transitions on interactive elements ──── */
+a,
+button {
+  @apply transition-colors duration-150;
+}
+
+/* ── Utility: serif headings ──────────────────────── */
+.font-display {
+  font-family: var(--font-serif);
+}
+
+/* ── Utility: glass card effect ───────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Drag-over state for upload zone ─────────────── */
+.drop-zone-active {
+  border-color: #2D6A4F;
+  background-color: #D8F3DC;
 }

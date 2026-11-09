@@ -1,5 +1,6 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { GeneratedRecipes } from "@ftc/shared";
+import { recipeCacheKey, setCachedRecipes } from "../../services/cache";
 import { structured } from "../../services/llm";
 import { loadCanonTags, loadLexicon, matchName } from "../../services/normalizer";
 import type { ScanStateT, ScanUpdate } from "../state";
@@ -68,7 +69,12 @@ export async function generateRecipes(state: ScanStateT): Promise<ScanUpdate> {
   }
 
   const issues = validatePicks(picks, ctx);
-  if (issues.length === 0) return { recipes: buildFromPicks(picks, ctx), recipeIssue: null, genAttempts: attempt };
+  if (issues.length === 0) {
+    const recipes = buildFromPicks(picks, ctx);
+    // Only validated model output is cached; the fallback is a degraded answer worth retrying later.
+    await setCachedRecipes(recipeCacheKey(state.confirmed, state.prefs), recipes);
+    return { recipes, recipeIssue: null, genAttempts: attempt };
+  }
   if (attempt < 2) return { recipeIssue: issues.join("; "), genAttempts: attempt };
   console.warn("[generateRecipes] invalid picks twice, using retrieved docs:", issues.join("; "));
   return { recipes: fallbackRecipes(ctx), recipeIssue: null, genAttempts: attempt };

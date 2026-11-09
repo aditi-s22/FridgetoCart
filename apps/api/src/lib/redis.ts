@@ -1,14 +1,14 @@
 import { Redis } from "@upstash/redis";
 import { env } from "../env";
 
-// Upstash over REST. Used for the recipe cache and rate limiting (M4).
-let client: Redis | null = null;
+// Upstash over REST. Used for the recipe cache and rate limiting; both are optional.
+let client: Redis | null | undefined;
 
-export function getRedis(): Redis {
-  if (client) return client;
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
-    throw new Error("Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to use Redis");
-  }
-  client = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+/** The Redis client, or null when Upstash isn't configured. */
+export function redis(): Redis | null {
+  if (client !== undefined) return client;
+  const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = env;
+  client = url && token ? new Redis({ url, token }) : null;
+  if (!client) console.warn("[redis] UPSTASH_REDIS_REST_URL/TOKEN not set: no recipe cache, no rate limit");
   return client;
 }

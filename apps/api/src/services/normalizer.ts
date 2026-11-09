@@ -107,19 +107,21 @@ async function hasEmbeddings(): Promise<boolean> {
   return embeddingsSeeded;
 }
 
-/** Nearest canonical ingredient by cosine similarity; null below the threshold. */
+/** Nearest canonical ingredient by cosine similarity; null below the threshold. One query for all names. */
 export async function nearestByEmbedding(names: string[]): Promise<(Canon | null)[]> {
   if (names.length === 0 || !(await hasEmbeddings())) return names.map(() => null);
-  const vectors = await embed("normalize", names);
-  return Promise.all(
-    vectors.map(async (v) => {
-      const vec = `[${v.join(",")}]`;
-      const rows = await prisma.$queryRaw<(Canon & { similarity: number })[]>`
-        SELECT "canonicalId", name, 1 - (embedding <=> ${vec}::vector) AS similarity
-        FROM "IngredientCanon" WHERE embedding IS NOT NULL
-        ORDER BY embedding <=> ${vec}::vector LIMIT 1`;
-      const top = rows[0];
-      return top && top.similarity >= EMBED_MIN_SIMILARITY ? { canonicalId: top.canonicalId, name: top.name } : null;
-    }),
-  );
+  const vectors = (await embed("normalize", names)).map((v) => `[${v.join(",")}]`);
+  const rows = await prisma.$queryRaw<(Canon & { ord: bigint; similarity: number })[]>`
+    WITH q AS (SELECT ord, vec::vector AS v FROM unnest(${vectors}::text[]) WITH ORDINALITY AS t(vec, ord))
+    SELECT q.ord, best."canonicalId", best.name, best.similarity
+    FROM q CROSS JOIN LATERAL (
+      SELECT "canonicalId", name, 1 - (embedding <=> q.v) AS similarity
+      FROM "IngredientCanon" WHERE embedding IS NOT NULL
+      ORDER BY embedding <=> q.v LIMIT 1
+    ) best`;
+  const byOrd = new Map(rows.map((r) => [Number(r.ord), r]));
+  return names.map((_, i) => {
+    const top = byOrd.get(i + 1);
+    return top && top.similarity >= EMBED_MIN_SIMILARITY ? { canonicalId: top.canonicalId, name: top.name } : null;
+  });
 }

@@ -13,7 +13,8 @@
     "db:seed": "tsx prisma/seed/seed.ts",
     "db:sync-dim": "tsx prisma/sync-embed-dim.ts",
     "compare:vision": "tsx scripts/compare-vision.ts",
-    "prepare:recipes": "tsx scripts/prepare-recipes.ts"
+    "prepare:recipes": "tsx scripts/prepare-recipes.ts",
+    "dev:token": "tsx scripts/dev-token.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
@@ -22,6 +23,7 @@
     "@ftc/shared": "workspace:^",
     "@types/node": "^26.6.6",
     "dotenv": "^18.0.10",
+    "jose": "^6.2.16",
     "prisma": "^6.19.3",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"

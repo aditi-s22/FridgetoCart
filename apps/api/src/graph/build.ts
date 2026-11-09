@@ -1,10 +1,11 @@
 import { AIMessage } from "@langchain/core/messages";
 import { type BaseCheckpointSaver, END, START, StateGraph } from "@langchain/langgraph";
-import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { env } from "../env";
+import { FastPostgresSaver } from "./fastSaver";
 import { MAX_AGENT_STEPS, cartAgent } from "./nodes/cartAgent";
-import { detectItems } from "./nodes/detectItems";
+import { detectItems, needsStrong } from "./nodes/detectItems";
+import { detectStrong } from "./nodes/detectStrong";
 import { diffMissing } from "./nodes/diffMissing";
 import { finalizeCart } from "./nodes/finalizeCart";
 import { generateRecipes } from "./nodes/generateRecipes";
@@ -12,8 +13,18 @@ import { humanReview } from "./nodes/humanReview";
 import { normalize } from "./nodes/normalize";
 import { pickRecipe } from "./nodes/pickRecipe";
 import { retrieveRecipes } from "./nodes/retrieveRecipes";
-import { ScanState, type ScanStateT } from "./state";
+import { ScanState, type ScanStateT, type ScanUpdate } from "./state";
 import { CART_TOOLS } from "./tools";
+
+/** Records the node in `path` for the trace and logs how long it took. */
+const step =
+  (name: string, fn: (s: ScanStateT) => Promise<ScanUpdate>) =>
+  async (s: ScanStateT): Promise<ScanUpdate> => {
+    const started = performance.now();
+    const update = await fn(s);
+    console.log(JSON.stringify({ evt: "node", scanId: s.scanId, node: name, ms: Math.round(performance.now() - started) }));
+    return { ...update, path: [name] };
+  };
 
 function afterAgent(s: ScanStateT): "tools" | "finalizeCart" {
   const last = s.messages.at(-1);
@@ -21,26 +32,31 @@ function afterAgent(s: ScanStateT): "tools" | "finalizeCart" {
   return wantsTools && s.agentSteps < MAX_AGENT_STEPS ? "tools" : "finalizeCart";
 }
 
-// START → detectItems → normalize → humanReview ⏸ → retrieveRecipes → generateRecipes (↺ once) → pickRecipe ⏸
+// START → detectItems → (low confidence ? detectStrong) → normalize → humanReview ⏸
+//   → retrieveRecipes → (cache hit ? pickRecipe : generateRecipes (↺ once) → pickRecipe ⏸)
 //   → diffMissing → (missing ? cartAgent ⇄ tools (≤ 10 turns) → finalizeCart : END)
-// Strong-model routing lands in M4.
 export function buildGraph(checkpointer: BaseCheckpointSaver) {
   return new StateGraph(ScanState)
-    .addNode("detectItems", detectItems)
-    .addNode("normalize", normalize)
-    .addNode("humanReview", humanReview)
-    .addNode("retrieveRecipes", retrieveRecipes)
-    .addNode("generateRecipes", generateRecipes)
-    .addNode("pickRecipe", pickRecipe)
-    .addNode("diffMissing", diffMissing)
-    .addNode("cartAgent", cartAgent)
+    .addNode("detectItems", step("detectItems", detectItems))
+    .addNode("detectStrong", step("detectStrong", detectStrong))
+    .addNode("normalize", step("normalize", normalize))
+    .addNode("humanReview", step("humanReview", humanReview))
+    .addNode("retrieveRecipes", step("retrieveRecipes", retrieveRecipes))
+    .addNode("generateRecipes", step("generateRecipes", generateRecipes))
+    .addNode("pickRecipe", step("pickRecipe", pickRecipe))
+    .addNode("diffMissing", step("diffMissing", diffMissing))
+    .addNode("cartAgent", step("cartAgent", cartAgent))
     .addNode("tools", new ToolNode(CART_TOOLS))
-    .addNode("finalizeCart", finalizeCart)
+    .addNode("finalizeCart", step("finalizeCart", finalizeCart))
     .addEdge(START, "detectItems")
-    .addEdge("detectItems", "normalize")
+    .addConditionalEdges("detectItems", needsStrong, ["detectStrong", "normalize"])
+    .addEdge("detectStrong", "normalize")
     .addEdge("normalize", "humanReview")
     .addEdge("humanReview", "retrieveRecipes")
-    .addEdge("retrieveRecipes", "generateRecipes")
+    .addConditionalEdges("retrieveRecipes", (s: ScanStateT) => (s.recipesCached ? "pickRecipe" : "generateRecipes"), [
+      "pickRecipe",
+      "generateRecipes",
+    ])
     // generateRecipes only sets recipeIssue on its first attempt, so this loops at most once.
     .addConditionalEdges("generateRecipes", (s: ScanStateT) => (s.recipeIssue ? "generateRecipes" : "pickRecipe"), [
       "generateRecipes",
@@ -62,10 +78,22 @@ let graph: ScanGraph | null = null;
 export async function getGraph(): Promise<ScanGraph> {
   if (graph) return graph;
   // Own schema, so `prisma db push` (which manages "public") never sees or drops these tables.
-  const checkpointer = PostgresSaver.fromConnString(env.DATABASE_URL, { schema: "langgraph" });
+  const checkpointer = new FastPostgresSaver(env.DATABASE_URL, "langgraph");
   await checkpointer.setup();
   graph = buildGraph(checkpointer);
   return graph;
 }
 
-export const threadOf = (scanId: string) => ({ configurable: { thread_id: scanId } });
+/** thread_id = scanId; runName/metadata group the run in LangSmith when tracing is on. */
+export const threadOf = (scanId: string) => ({
+  configurable: { thread_id: scanId },
+  runName: "scan",
+  metadata: { scanId },
+});
+
+/**
+ * Config for running the graph. Checkpoints are written once, when the run pauses or ends, not
+ * after every node: each one costs several Neon round trips (~100 ms each). A crash mid-run leaves
+ * the scan at its last pause, and retrying the request re-runs from there (cart writes are idempotent).
+ */
+export const runOf = (scanId: string) => ({ ...threadOf(scanId), durability: "exit" as const });

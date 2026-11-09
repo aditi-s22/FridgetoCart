@@ -35,22 +35,45 @@ export function ItemChip({ item, onChange, onDelete }: Props) {
     const trimmed = name.trim();
     if (!trimmed) return;
     const n = Number(qty);
-    onChange({ ...renamed(item, trimmed), qty: qty.trim() && Number.isFinite(n) ? n : null, unit: unit.trim() || null });
+    onChange({
+      ...renamed(item, trimmed),
+      qty: qty.trim() && Number.isFinite(n) ? n : null,
+      unit: unit.trim() || null,
+    });
     setEditing(false);
   }
 
   if (editing) {
     return (
       <form
-        className="flex w-full items-center gap-2 rounded-xl border border-brand bg-white p-2"
+        className="flex w-full items-center gap-2 rounded-2xl border-2 border-brand bg-white p-2 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           save();
         }}
       >
-        <Input aria-label="Name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-        <Input aria-label="Quantity" className="w-16" inputMode="decimal" value={qty} placeholder="qty" onChange={(e) => setQty(e.target.value)} />
-        <Input aria-label="Unit" className="w-20" value={unit} placeholder="unit" onChange={(e) => setUnit(e.target.value)} />
+        <Input
+          aria-label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoFocus
+          className="flex-1"
+        />
+        <Input
+          aria-label="Quantity"
+          className="w-16 shrink-0"
+          inputMode="decimal"
+          value={qty}
+          placeholder="qty"
+          onChange={(e) => setQty(e.target.value)}
+        />
+        <Input
+          aria-label="Unit"
+          className="w-20 shrink-0"
+          value={unit}
+          placeholder="unit"
+          onChange={(e) => setUnit(e.target.value)}
+        />
         <Button type="submit" size="icon" aria-label="Save">
           <Check size={16} />
         </Button>
@@ -61,19 +84,50 @@ export function ItemChip({ item, onChange, onDelete }: Props) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-full border py-1 pl-3 pr-1 text-sm",
-        lowConf ? "border-amber-400 bg-amber-50" : "border-stone-300 bg-white",
+        "group flex items-center gap-1 rounded-full border py-1.5 pl-3.5 pr-1 text-sm font-medium transition-shadow duration-150 hover:shadow-sm",
+        lowConf
+          ? "border-amber-300 bg-amber-50 text-amber-900"
+          : "border-stone-200 bg-white text-stone-800",
       )}
-      title={lowConf ? `Not sure about this one (${Math.round(item.confidence * 100)}%)` : undefined}
+      title={
+        lowConf
+          ? `Low confidence (${Math.round(item.confidence * 100)}%) — please verify`
+          : undefined
+      }
     >
-      <span className="font-medium">{item.name}</span>
-      {qtyLabel(item) && <span className="text-stone-500">· {qtyLabel(item)}</span>}
-      {lowConf && <span className="text-amber-600">?</span>}
-      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" aria-label={`Edit ${item.name}`} onClick={() => setEditing(true)}>
-        <Pencil size={14} />
+      <span>{item.name}</span>
+      {qtyLabel(item) && (
+        <span
+          className={cn(
+            "text-xs",
+            lowConf ? "text-amber-700" : "text-stone-500",
+          )}
+        >
+          · {qtyLabel(item)}
+        </span>
+      )}
+      {lowConf && (
+        <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-200 text-[10px] font-bold text-amber-800">
+          ?
+        </span>
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-0.5 h-6 w-6 rounded-full opacity-60 group-hover:opacity-100"
+        aria-label={`Edit ${item.name}`}
+        onClick={() => setEditing(true)}
+      >
+        <Pencil size={12} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" aria-label={`Remove ${item.name}`} onClick={onDelete}>
-        <X size={14} />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 rounded-full opacity-60 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+        aria-label={`Remove ${item.name}`}
+        onClick={onDelete}
+      >
+        <X size={12} />
       </Button>
     </div>
   );

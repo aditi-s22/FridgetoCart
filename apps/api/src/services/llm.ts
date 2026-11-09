@@ -9,6 +9,7 @@ import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import type { z } from "zod";
 import { env } from "../env";
 import { AppError } from "../http";
+import { recordCall } from "./trace";
 
 /** Every LLM call in the API goes through this module: model routing + cost logging. */
 export type ModelRole = "visionFast" | "visionStrong" | "text";
@@ -73,6 +74,7 @@ export function costInr(model: string, inputTokens: number, outputTokens: number
 function logUsage(entry: Omit<CallUsage, "costInr"> & { node: string; ok: boolean }): number {
   const cost = costInr(entry.model, entry.inputTokens, entry.outputTokens);
   console.log(JSON.stringify({ evt: "llm", ...entry, costInr: Number(cost.toFixed(4)) }));
+  recordCall({ ...entry, costInr: cost });
   return cost;
 }
 

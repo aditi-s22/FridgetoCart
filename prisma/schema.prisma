@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  previewFeatures = ["postgresqlExtensions", "relationJoins"]
 }
 
 datasource db {
@@ -116,4 +116,20 @@ model IdempotencyKey {
   key       String   @id
   response  Json
   createdAt DateTime @default(now())
+}
+
+/// One row per LLM/embedding call made while handling a scan (the built-in trace; also feeds eval cost).
+model LlmCall {
+  id           String   @id @default(cuid())
+  scanId       String
+  node         String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  costInr      Float
+  latencyMs    Int
+  ok           Boolean
+  createdAt    DateTime @default(now())
+
+  @@index([scanId, createdAt])
 }

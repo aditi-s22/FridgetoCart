@@ -1,12 +1,13 @@
 import { join } from "node:path";
 import { PresignRequest } from "@ftc/shared";
 import express, { Router } from "express";
+import { requireUser } from "../auth";
 import { AppError, parse } from "../http";
 import { LOCAL_DIR, LOCAL_KEY, presign, saveLocal, usesLocalStorage } from "../services/storage";
 
 export const uploads = Router();
 
-uploads.post("/presign", async (req, res) => {
+uploads.post("/presign", requireUser, async (req, res) => {
   const { contentType } = parse(PresignRequest, req.body);
   res.json(await presign(contentType));
 });

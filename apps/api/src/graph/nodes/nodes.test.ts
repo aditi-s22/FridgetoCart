@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildLexicon } from "../../services/normalizer";
 import { BASE_STATE } from "../testFixtures";
 
-vi.mock("../../services/llm", () => ({ structured: vi.fn(), embed: vi.fn() }));
+vi.mock("../../services/llm", () => ({ structured: vi.fn(), embed: vi.fn(), modelOf: (r: string) => r }));
 vi.mock("../../services/storage", () => ({
   readImageAsDataUrl: vi.fn(async () => "data:image/jpeg;base64,AAAA"),
 }));
@@ -25,7 +25,7 @@ describe("detectItems", () => {
 
     const out = await detectItems(BASE_STATE);
 
-    expect(out).toEqual({ detected: items, attempts: 1 });
+    expect(out).toEqual({ detected: items, attempts: 1, detectedBy: "visionFast" });
     const call = vi.mocked(structured).mock.calls[0]?.[0];
     expect(call?.role).toBe("visionFast");
   });
