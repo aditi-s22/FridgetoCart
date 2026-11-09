@@ -11,7 +11,11 @@ Setup: `pnpm dev`, open http://localhost:3000. Test desktop (about 1280px wide) 
 
 ## 1. Sign-in and sign-out
 - [ ] Opening any page while signed out redirects to `/signin`.
-- [ ] Google sign-in (or dev login locally) lands on the home page.
+- [ ] The sign-in page shows the tester email and password (and never the admin ones).
+- [ ] Signing in as the tester with those credentials lands on the home page.
+- [ ] A wrong password and an unknown email both show "Incorrect email or password.".
+- [ ] Email works in any letter case (e.g. `TESTER@FridgeToCart.demo`).
+- [ ] Signing in as the admin account (with its private password) also works.
 - [ ] Refreshing keeps you signed in.
 - [ ] Sign out returns to `/signin`; the back button does not show scan data; `/history` redirects to `/signin`.
 

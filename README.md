@@ -21,7 +21,7 @@ place; the app has **not** been deployed anywhere yet (see [Known limitations](#
 - **Diet-aware**: vegetarian, non-vegetarian, Jain, egg, plus an avoid list and a time limit.
 - **Smart Ingredient Substitution**: AI-suggested swaps for missing ingredients, preferring what you already have, with accept / reject / other options / undo. The original recipe is never changed.
 - **Shopping agent**: a tool-using LangGraph agent fills a cart from a mock grocery store; anything it can't find gets Blinkit and Zepto search links.
-- **History and preferences**, Google sign-in, per-user isolation, rate limiting, Redis recipe cache and built-in per-scan tracing (tokens, ₹ cost, latency).
+- **History and preferences**, email + password sign-in (two configured accounts), per-user isolation, rate limiting, Redis recipe cache and built-in per-scan tracing (tokens, ₹ cost, latency).
 
 ## Screenshots
 
@@ -82,7 +82,7 @@ suggestions. Accepted substitutions travel with the pick request and are stored 
 | Orchestration | LangGraph.js with a Postgres checkpointer and `interrupt()` pauses |
 | Data | Neon PostgreSQL, pgvector, Prisma |
 | Cache / limits | Upstash Redis |
-| Auth | NextAuth v5 (Google), short-lived HS256 API tokens |
+| Auth | NextAuth v5 (Credentials: email + password), short-lived HS256 API tokens |
 | Monorepo | pnpm workspaces |
 
 ## Layout
@@ -234,11 +234,23 @@ the recipes and ingredients with the embedding model, which calls the Gemini API
 
 The web app signs users in with NextAuth (v5), then trades the session for a 15-minute HS256 token
 (`/api/token`) that the API verifies with the shared `API_JWT_SECRET`. User ids are stable:
-`google:<sub>` or `dev:<email>`.
+`demo:tester`, `demo:admin` or (local dev login) `dev:<email>`.
 
-- **Google**: create an OAuth client (type "Web application") at
-  https://console.cloud.google.com/apis/credentials with redirect URI
-  `http://localhost:3000/api/auth/callback/google`, then set `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`.
+- **Email + password**: exactly two accounts, with the emails fixed in `apps/web/lib/demoAuth.ts` and
+  the passwords taken from the environment (never committed):
+
+  | Account | Email | Password variable | Role |
+  |---|---|---|---|
+  | Tester | `tester@fridgetocart.demo` | `DEMO_USER_PASSWORD` | `user` |
+  | Admin | `aditi@fridgetocart.demo` | `ADMIN_PASSWORD` | `admin` |
+
+  Email is compared case-insensitively; passwords must be at least 8 characters, otherwise that
+  account is disabled. Passwords are verified on the server with scrypt and a constant-time
+  comparison, and a wrong password and an unknown email give the same error. The role is stored in the
+  session and token and is **not used by any feature yet**; it is reserved for future admin functionality.
+  The sign-in page deliberately **displays the tester email and password** so portfolio visitors can try
+  the app, so choose a throwaway value. The admin credentials are never displayed. There is no
+  lockout or login rate limiting; the only cost control is the per-user scan limit (10 per hour, needs Redis).
 - **Dev login**: with `AUTH_DEV_LOGIN=true`, `/signin` also offers email-only sign-in (no password).
   It is always off when `NODE_ENV=production`.
 - **curl**: `curl -H "Authorization: Bearer $(pnpm -s dev:token you@example.com)" localhost:4000/scans`
@@ -263,7 +275,9 @@ All apps read one `.env` at the repo root (see `.env.example`); on a host, set t
 | `STORE_PORT`, `STORE_BASE_URL` | store, api | Where the api finds the store. |
 | `NEXTAUTH_SECRET` | web | Session secret. |
 | `API_JWT_SECRET` | web, api | ≥ 32 chars; signs and verifies API tokens. |
-| `AUTH_TRUST_HOST`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | web | Google sign-in. |
+| `DEMO_USER_PASSWORD` | web | Password of `tester@fridgetocart.demo` (role `user`). **Shown on the sign-in page.** Min 8 chars. |
+| `ADMIN_PASSWORD` | web | Password of `aditi@fridgetocart.demo` (role `admin`). Private. Min 8 chars. |
+| `AUTH_TRUST_HOST` | web | `true` if sign-in complains about the host. |
 | `AUTH_DEV_LOGIN` | web | Local only; ignored in production. |
 | `NEXT_PUBLIC_API_URL` | web | Browser-visible API base URL. |
 | `LANGSMITH_API_KEY`, `LANGSMITH_TRACING`, `LANGSMITH_PROJECT` | api | Optional LangSmith tracing. |
@@ -314,7 +328,7 @@ Railway; existing Neon and Upstash. Nothing is deployed yet.
 
 ## Known limitations
 
-- Not deployed; hosting, upload storage and OAuth callbacks are documented but untested in production.
+- Not deployed; hosting and upload storage are documented but untested in production.
 - No ground-truth detection benchmark (G1) and no end-to-end latency measurement (G4).
 - Substitution quality (is the swap sensible?) is only validated for diet, avoid list and ids, not culinary quality.
 - Unconfirmed substitution choices live in the browser until a recipe is picked, so a refresh loses them.

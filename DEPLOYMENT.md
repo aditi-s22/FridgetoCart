@@ -23,7 +23,7 @@ Target layout (no new infrastructure beyond what the app already uses):
 - Gemini is billed per call once you leave the free quota. Every scan calls the API, and
   seeding embeds all recipes. Set a quota or billing alert in Google AI Studio.
 - Render's free web services sleep when idle (slow first request) and have an **ephemeral disk**.
-- A public deployment lets other people spend your Gemini quota. Keep Google sign-in on, leave
+- A public deployment lets other people spend your Gemini quota. Sign-in is limited to the two configured accounts, but the tester password is shown on the sign-in page, so anyone can use that account (and spend your Gemini quota). Leave
   `AUTH_DEV_LOGIN` off, and keep the built-in limit of 10 scans per user per hour (needs Redis).
 
 ## 0. Generate secrets
@@ -48,7 +48,7 @@ Use different values from local development. Never commit them; `.env` is git-ig
    pnpm db:seed                        # 241 ingredients, 500 recipes, 237 products; embeds with Gemini
    ```
 
-   `db:seed` calls the embedding API and is the only deployment step that needs Gemini. If you
+   `db:seed` calls the embedding API and is the only deployment step that needs Gemini (it only embeds rows that are new or changed, so on a fully seeded database it makes no calls). If you
    already seeded the database you will use, skip it. Do not run `db push --accept-data-loss`.
 4. The API creates its LangGraph checkpoint tables in the `langgraph` schema on first start.
 
@@ -98,8 +98,12 @@ Environment variables:
 Optional: `VISION_MODEL_*`, `TEXT_MODEL`, `EMBED_MODEL`, `EMBED_DIM` (must match the seeded
 database), `USD_INR`, `LANGSMITH_*`.
 
-On startup the API checks the database vector dimensions against `EMBED_DIM` and refuses to start
-on a mismatch; that error appears in the service logs.
+On startup the API runs a read-only SQL check (no Gemini call): the `vector` extension must be
+installed and `IngredientCanon.embedding` and `RecipeDoc.embedding` must be `vector(EMBED_DIM)`
+(default 1536). On a mismatch it refuses to start and the error appears in the service logs.
+Starting the API therefore costs nothing; Gemini is only called when a user scans, reviews or
+asks for substitutions. A model that returns vectors of a different size than `EMBED_DIM` is no
+longer caught at startup, only on the first embedding request.
 
 ## 5. Store service
 
@@ -122,21 +126,20 @@ note that anyone can create carts in your demo catalogue.
   | `NEXT_PUBLIC_API_URL` | the API's public URL (used by the browser) |
   | `NEXTAUTH_SECRET` | secret from step 0 |
   | `API_JWT_SECRET` | same value as the API |
-  | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client |
+  | `DEMO_USER_PASSWORD` | password for `tester@fridgetocart.demo` (role `user`), at least 8 characters. **Displayed on the sign-in page**, so use a throwaway value. |
+  | `ADMIN_PASSWORD` | password for `aditi@fridgetocart.demo` (role `admin`), at least 8 characters. Never displayed; keep private. |
   | `AUTH_TRUST_HOST` | `true` if sign-in complains about the host |
 
   Do **not** set `AUTH_DEV_LOGIN` (it is ignored in production anyway).
 - `next.config.ts` also tries to load a root `.env`; on Vercel that file does not exist, which is fine because the variables come from the project settings.
 
-## 7. Google sign-in callback
+## 7. Sign-in
 
-In Google Cloud Console → Credentials → your OAuth client (type *Web application*):
-
-- Authorized JavaScript origin: `https://your-app.vercel.app`
-- Authorized redirect URI: `https://your-app.vercel.app/api/auth/callback/google`
-
-Keep the localhost entries if you also develop locally. While the OAuth consent screen is in
-*Testing*, only listed test users can sign in.
+Sign-in is email + password for two fixed accounts (`tester@fridgetocart.demo`, `aditi@fridgetocart.demo`),
+so there is no OAuth client, consent screen or callback URL to configure. Set `DEMO_USER_PASSWORD` and
+`ADMIN_PASSWORD` on Vercel (step 6). An account whose password is missing or shorter than 8 characters
+cannot sign in, so a missing variable fails closed. Changing a password takes effect on the next deploy
+(existing sessions stay valid until they expire; rotate `NEXTAUTH_SECRET` to end them all).
 
 ## 8. Production smoke test
 
@@ -149,7 +152,7 @@ curl -si https://YOUR-API/scans | head -1        # expect 401 (routes are authen
 curl -si -H "Origin: https://evil.example" https://YOUR-API/health | grep -i access-control   # expect no allow-origin for another origin
 ```
 
-Then, in a browser: sign in with Google → upload a photo → review → recipes → (optionally) substitutions → pick → cart → open a Blinkit/Zepto link → History → Preferences → sign out. Each scan makes paid Gemini calls, so use a few photos, not many. A manual checklist is in [docs/MANUAL_TEST_CHECKLIST.md](docs/MANUAL_TEST_CHECKLIST.md).
+Then, in a browser: sign in as the tester → upload a photo → review → recipes → (optionally) substitutions → pick → cart → open a Blinkit/Zepto link → History → Preferences → sign out. Each scan makes paid Gemini calls, so use a few photos, not many. A manual checklist is in [docs/MANUAL_TEST_CHECKLIST.md](docs/MANUAL_TEST_CHECKLIST.md).
 
 ## Security checklist
 
@@ -157,6 +160,8 @@ Then, in a browser: sign in with Google → upload a photo → review → recipe
 - [ ] Production secrets differ from development ones.
 - [ ] `WEB_ORIGIN` is the real web origin, not `*`.
 - [ ] `AUTH_DEV_LOGIN` unset.
+- [ ] `DEMO_USER_PASSWORD` is a throwaway value (it is shown publicly) and `ADMIN_PASSWORD` is strong, private and different from it.
+- [ ] Passwords exist only in the host's environment settings, never in Git or logs.
 - [ ] Store service not exposed more widely than needed.
 - [ ] Gemini quota or billing alert configured.
 - [ ] Error responses are generic (`{"error":{"code":"internal","message":"Something went wrong"}}`); stack traces go only to server logs.
