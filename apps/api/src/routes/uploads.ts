@@ -1,4 +1,3 @@
-import { join } from "node:path";
 import { PresignRequest } from "@ftc/shared";
 import express, { Router } from "express";
 import { requireUser } from "../auth";
@@ -29,5 +28,12 @@ uploads.put("/local/:key", express.raw({ type: "image/*", limit: "10mb" }), asyn
 });
 
 uploads.get("/local/:key", (req, res) => {
-  res.sendFile(join(LOCAL_DIR, localKey(req.params.key)));
+  // `root` is required: without it, sendFile refuses an absolute path that passes through
+  // a dot-directory (.uploads) and would 404 every image.
+  // The key is validated against LOCAL_KEY, so it cannot contain slashes or dot segments.
+  res.sendFile(localKey(req.params.key), { root: LOCAL_DIR }, (err) => {
+    if (err && !res.headersSent) {
+      res.status(404).json({ error: { code: "not_found", message: "Image not found" } });
+    }
+  });
 });

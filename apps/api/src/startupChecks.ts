@@ -1,14 +1,18 @@
 import { prisma } from "./db";
 import { env } from "./env";
-import { embed } from "./services/llm";
 
 const VECTOR_TABLES = ["IngredientCanon", "RecipeDoc"];
 
 /**
- * Fails fast if the vector(N) columns or the embedding model disagree with EMBED_DIM,
- * instead of failing later on the first insert or similarity query.
+ * Fails fast if pgvector is missing or the vector(N) columns disagree with EMBED_DIM, instead of
+ * failing later on the first insert or similarity query. Read-only SQL; it makes no model calls,
+ * so starting the API costs nothing. (A model that returns another size than EMBED_DIM is caught
+ * the first time something is embedded.)
  */
 export async function checkEmbeddingDims(): Promise<void> {
+  const ext = await prisma.$queryRaw<{ extname: string }[]>`SELECT extname FROM pg_extension WHERE extname = 'vector'`;
+  if (ext.length === 0) throw new Error("The pgvector extension is not installed. Run `pnpm db:push` or `CREATE EXTENSION vector;`.");
+
   // pgvector stores a column's dimension in atttypmod.
   const rows = await prisma.$queryRaw<{ table: string; dims: number }[]>`
     SELECT c.relname AS "table", a.atttypmod AS dims
@@ -28,6 +32,5 @@ export async function checkEmbeddingDims(): Promise<void> {
     throw new Error(`EMBED_DIM=${env.EMBED_DIM} but ${cols}. Run \`pnpm db:push\` (re-embed any existing rows).`);
   }
 
-  await embed("startupCheck", ["dimension check"]); // throws if the model returns another size
-  console.log(`embeddings ok: ${env.EMBED_MODEL} → vector(${env.EMBED_DIM})`);
+  console.log(`pgvector ok: embedding columns are vector(${env.EMBED_DIM})`);
 }
