@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildLexicon } from "../../services/normalizer";
-import type { ScanStateT } from "../state";
+import { BASE_STATE } from "../testFixtures";
 
 vi.mock("../../services/llm", () => ({ structured: vi.fn(), embed: vi.fn() }));
 vi.mock("../../services/storage", () => ({
@@ -16,8 +16,6 @@ const normalizer = await import("../../services/normalizer");
 const { detectItems } = await import("./detectItems");
 const { normalize } = await import("./normalize");
 
-const base: ScanStateT = { scanId: "s1", userId: "u1", imageUrl: "x", detected: [], items: [], attempts: 0 };
-
 beforeEach(() => vi.clearAllMocks());
 
 describe("detectItems", () => {
@@ -25,7 +23,7 @@ describe("detectItems", () => {
     const items = [{ rawName: "tamatar", qty: "3", confidence: 0.9 }];
     vi.mocked(structured).mockResolvedValue({ items });
 
-    const out = await detectItems(base);
+    const out = await detectItems(BASE_STATE);
 
     expect(out).toEqual({ detected: items, attempts: 1 });
     const call = vi.mocked(structured).mock.calls[0]?.[0];
@@ -49,7 +47,7 @@ describe("normalize", () => {
       null,
     ]);
     const out = await normalize({
-      ...base,
+      ...BASE_STATE,
       detected: [
         { rawName: "Tamatar", qty: "3", confidence: 0.5 },
         { rawName: "tomatoes", qty: "2", confidence: 0.9 },

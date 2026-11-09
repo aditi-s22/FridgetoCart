@@ -32,7 +32,7 @@ const PRICES: Record<string, [number, number]> = {
   "text-embedding-3-small": [0.02, 0],
 };
 // structured() retries once itself, so SDK retries are off and each call is capped.
-const CALL_TIMEOUT_MS = 25_000;
+const DEFAULT_TIMEOUT_MS = 25_000;
 
 export type CallUsage = { model: string; inputTokens: number; outputTokens: number; latencyMs: number; costInr: number };
 
@@ -94,7 +94,13 @@ export function geminiSchema(node: unknown): unknown {
   return out;
 }
 
-type StructuredOpts<T extends z.ZodTypeAny> = { role: ModelRole; node: string; schema: T; messages: BaseMessage[] };
+type StructuredOpts<T extends z.ZodTypeAny> = {
+  role: ModelRole;
+  node: string;
+  schema: T;
+  messages: BaseMessage[];
+  timeoutMs?: number;
+};
 
 /**
  * Structured call validated with Zod. Retries once on invalid output, then throws a
@@ -117,7 +123,7 @@ export async function structuredWithUsage<T extends z.ZodTypeAny>(
     let usage = { input_tokens: 0, output_tokens: 0 };
     providerFailed = false;
     try {
-      const out = await runnable.invoke(opts.messages, { timeout: CALL_TIMEOUT_MS });
+      const out = await runnable.invoke(opts.messages, { timeout: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS });
       parsed = out.parsed;
       if (AIMessage.isInstance(out.raw) && out.raw.usage_metadata) usage = out.raw.usage_metadata;
     } catch (err) {
@@ -155,6 +161,10 @@ export async function embed(node: string, texts: string[]): Promise<number[][]> 
   embedder ??= embeddingModel();
   const started = Date.now();
   const vectors = await embedder.embedDocuments(texts);
+  // LangChain's Google client returns [] for a failed batch (e.g. a 429) instead of throwing.
+  if (vectors.length !== texts.length || vectors.some((v) => v.length === 0)) {
+    throw new Error(`${env.EMBED_MODEL} returned empty vectors (request failed, often a 429 rate limit)`);
+  }
   const bad = vectors.find((v) => v.length !== env.EMBED_DIM);
   if (bad) throw new Error(`${env.EMBED_MODEL} returned ${bad.length}-dim vectors but EMBED_DIM=${env.EMBED_DIM}`);
   // LangChain doesn't surface embedding usage; estimate ~4 chars per token.

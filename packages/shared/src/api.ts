@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReviewItem, ScanStatus } from "./domain";
+import { Cart, Ingredient, Recipe, ReviewItem, ScanStatus } from "./domain";
 
 export const ApiError = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
@@ -27,11 +27,28 @@ export const CreateScanResponse = z.object({
 });
 export type CreateScanResponse = z.infer<typeof CreateScanResponse>;
 
+export const ReviewRequest = z.object({ items: z.array(Ingredient).max(100) });
+export type ReviewRequest = z.infer<typeof ReviewRequest>;
+
+export const ReviewResponse = z.object({ status: ScanStatus, recipes: z.array(Recipe) });
+export type ReviewResponse = z.infer<typeof ReviewResponse>;
+
+export const PickRequest = z.object({ recipeId: z.string().min(1) });
+export type PickRequest = z.infer<typeof PickRequest>;
+
+export const PickResponse = z.object({ status: ScanStatus, cart: Cart.nullable() });
+export type PickResponse = z.infer<typeof PickResponse>;
+
 export const ScanView = z.object({
   scanId: z.string(),
   status: ScanStatus,
   imageUrl: z.string(),
   createdAt: z.string(),
+  /** Detected + normalized items (input to review) */
   items: z.array(ReviewItem),
+  /** Items the user confirmed on the review screen */
+  confirmed: z.array(Ingredient),
+  recipes: z.array(Recipe),
+  selectedRecipeId: z.string().nullable(),
 });
 export type ScanView = z.infer<typeof ScanView>;

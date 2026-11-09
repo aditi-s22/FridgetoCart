@@ -41,10 +41,32 @@ export const Recipe = z.object({
   steps: z.array(z.string()),
   timeMins: z.number().int().positive(),
   dietTags: z.array(z.string()),
+  /** canonicalIds of non-staple ingredients the user has / lacks */
   have: z.array(z.string()),
   missing: z.array(z.string()),
+  /** One-line adaptation from the source recipe, e.g. a swap. */
+  note: z.string().nullable(),
+  /** Attribution link for the source recipe (dataset is CC BY 4.0). */
+  sourceUrl: z.string().nullable(),
 });
 export type Recipe = z.infer<typeof Recipe>;
+
+/** What the recipe LLM returns: picks from the retrieved docs, not free-form recipes. */
+export const GeneratedRecipes = z.object({
+  recipes: z
+    .array(
+      z.object({
+        sourceDocId: z.string(),
+        title: z.string().min(1),
+        /** Non-staple ingredients this version uses: from the doc, or swaps from the user's list. */
+        ingredientIds: z.array(z.string()).min(1),
+        note: z.string().nullable(),
+      }),
+    )
+    .min(1)
+    .max(5),
+});
+export type GeneratedRecipes = z.infer<typeof GeneratedRecipes>;
 
 export const CartItem = z.object({
   productId: z.string(),

@@ -15,7 +15,7 @@ const Env = z.object({
   WEB_ORIGIN: z.string().default("http://localhost:3000"),
   VISION_MODEL_FAST: z.string().default("google:gemini-3.5-flash-lite"),
   VISION_MODEL_STRONG: z.string().default("google:gemini-3.5-flash"),
-  TEXT_MODEL: z.string().default("google:gemini-3.5-flash"),
+  TEXT_MODEL: z.string().default("google:gemini-3.5-flash-lite"),
   EMBED_MODEL: z.string().default("google:gemini-embedding-2"),
   // Must match the vector(N) columns; `pnpm db:push` syncs schema.prisma to it.
   // Capped at 2000, pgvector's limit for HNSW/IVFFlat indexes.

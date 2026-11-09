@@ -1,19 +1,11 @@
 import type { ReviewItem } from "@ftc/shared";
-import { keyOf, loadLexicon, matchName, nearestByEmbedding, parseQty } from "../../services/normalizer";
-import type { Canon } from "../../services/normalizer";
+import { keyOf, parseQty } from "../../services/normalizer";
 import type { ScanStateT, ScanUpdate } from "../state";
+import { resolveNames } from "./resolve";
 
 /** rawName → canonical: exact synonym match → embedding nearest → `unknown:<name>`. No LLM. */
 export async function normalize(state: ScanStateT): Promise<ScanUpdate> {
-  const lex = await loadLexicon();
-  const matches: (Canon | null)[] = state.detected.map((d) => matchName(lex, d.rawName));
-
-  const misses = state.detected.filter((_, i) => !matches[i]);
-  const nearest = await nearestByEmbedding(misses.map((d) => d.rawName));
-  let m = 0;
-  for (let i = 0; i < matches.length; i++) {
-    if (!matches[i]) matches[i] = nearest[m++] ?? null;
-  }
+  const matches = await resolveNames(state.detected.map((d) => d.rawName));
 
   // One entry per canonical ingredient; the most confident detection wins.
   const byId = new Map<string, ReviewItem>();

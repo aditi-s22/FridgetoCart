@@ -1,5 +1,14 @@
 import { ApiError } from "@ftc/shared";
-import type { CreateScanResponse, PresignRequest, PresignResponse, ScanView } from "@ftc/shared";
+import type {
+  CreateScanResponse,
+  Ingredient,
+  PickResponse,
+  PresignRequest,
+  PresignResponse,
+  ReviewResponse,
+  ScanView,
+  UserPrefs,
+} from "@ftc/shared";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -22,7 +31,18 @@ export const api = {
   createScan: (imageUrl: string) =>
     call<CreateScanResponse>("/scans", { method: "POST", body: JSON.stringify({ imageUrl }) }),
   getScan: (id: string) => call<ScanView>(`/scans/${encodeURIComponent(id)}`),
+  review: (id: string, items: Ingredient[]) =>
+    call<ReviewResponse>(`/scans/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ items }) }),
+  pick: (id: string, recipeId: string) =>
+    call<PickResponse>(`/scans/${encodeURIComponent(id)}/pick`, { method: "POST", body: JSON.stringify({ recipeId }) }),
+  getPrefs: () => call<UserPrefs>("/prefs"),
+  putPrefs: (prefs: UserPrefs) => call<UserPrefs>("/prefs", { method: "PUT", body: JSON.stringify(prefs) }),
 };
+
+/** The screen a scan should be shown on, so reopening a scan lands on its saved step. */
+export function screenFor(scan: ScanView): "review" | "recipes" {
+  return scan.status === "awaiting_review" || scan.status === "detecting" ? "review" : "recipes";
+}
 
 export async function uploadImage(blob: Blob): Promise<string> {
   const { uploadUrl, imageUrl } = await api.presign("image/jpeg");

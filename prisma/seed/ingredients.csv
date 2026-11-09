@@ -1,78 +1,242 @@
-canonicalId,name,synonyms
-tomato,Tomato,tamatar|tomatoes|tamaatar
-onion,Onion,pyaaz|pyaz|kanda|onions|red onion
-potato,Potato,aloo|alu|batata|potatoes
-garlic,Garlic,lahsun|lehsun|garlic cloves
-ginger,Ginger,adrak|ginger root
-green_chilli,Green Chilli,hari mirch|green chili|green chillies|chilli|mirchi
-coriander_leaves,Coriander Leaves,dhaniya|dhania|cilantro|hara dhaniya|coriander
-mint,Mint,pudina|mint leaves
-curry_leaves,Curry Leaves,kadi patta|kadhi patta|curry leaf
-spinach,Spinach,palak|spinach leaves
-fenugreek_leaves,Fenugreek Leaves,methi|methi leaves
-cauliflower,Cauliflower,gobi|phool gobi|gobhi
-cabbage,Cabbage,patta gobi|band gobi|bandh gobhi
-carrot,Carrot,gajar|carrots
-peas,Green Peas,matar|mutter|green peas|peas
-capsicum,Capsicum,shimla mirch|bell pepper|green capsicum
-okra,Okra,bhindi|lady finger|ladyfinger
-brinjal,Brinjal,baingan|eggplant|aubergine
-bottle_gourd,Bottle Gourd,lauki|doodhi|ghiya
-cucumber,Cucumber,kheera|kakdi|cucumbers
-lemon,Lemon,nimbu|lime|lemons
-beans,French Beans,beans|green beans|french beans
-mushroom,Mushroom,mushrooms|khumb
-sweet_corn,Sweet Corn,corn|bhutta|makka
-beetroot,Beetroot,chukandar|beet
-radish,Radish,mooli|muli
-pumpkin,Pumpkin,kaddu|sitaphal
-spring_onion,Spring Onion,hara pyaaz|scallion|green onion
-paneer,Paneer,cottage cheese|panir
-milk,Milk,doodh|dudh
-curd,Curd,dahi|yogurt|yoghurt
-butter,Butter,makhan|amul butter
-ghee,Ghee,desi ghee|clarified butter
-cheese,Cheese,cheese slices|processed cheese|mozzarella
-cream,Fresh Cream,malai|cream|fresh cream
-buttermilk,Buttermilk,chaas|chhaas|mattha
-egg,Egg,anda|eggs|ande
-chicken,Chicken,murgi|murg|chicken breast
-mutton,Mutton,gosht|goat meat|lamb
-fish,Fish,machli|machhli
-prawns,Prawns,jhinga|shrimp
-tofu,Tofu,soy paneer
-bread,Bread,double roti|pav|white bread|brown bread
-rice,Rice,chawal|basmati|basmati rice
-atta,Wheat Flour,atta|gehun ka atta|whole wheat flour
-maida,Refined Flour,maida|all purpose flour
-besan,Gram Flour,besan|chickpea flour
-suji,Semolina,suji|sooji|rava|rawa
-poha,Flattened Rice,poha|chivda|aval
-toor_dal,Toor Dal,arhar dal|tuvar dal|pigeon pea
-moong_dal,Moong Dal,mung dal|yellow moong
-masoor_dal,Masoor Dal,red lentil|lal masoor
-chana,Chickpeas,chole|kabuli chana|chickpea
-rajma,Kidney Beans,rajma|red kidney beans
-apple,Apple,seb|apples
-banana,Banana,kela|bananas
-mango,Mango,aam|mangoes
-orange,Orange,santra|narangi|oranges
-grapes,Grapes,angoor
-pomegranate,Pomegranate,anar
-coconut,Coconut,nariyal|grated coconut
-tamarind,Tamarind,imli
-jaggery,Jaggery,gur|gud
-sugar,Sugar,cheeni|shakkar
-ketchup,Tomato Ketchup,ketchup|tomato sauce
-pickle,Pickle,achaar|achar
-chutney,Chutney,green chutney|hari chutney
-noodles,Noodles,maggi|instant noodles
-pasta,Pasta,macaroni|penne
-leftover_rice,Cooked Rice,cooked rice|leftover rice|bhaat
-leftover_dal,Cooked Dal,cooked dal|dal|leftover dal
-leftover_sabzi,Cooked Sabzi,sabzi|sabji|leftover sabzi|curry
-roti,Roti,chapati|phulka|leftover roti
-salt,Salt,namak
-water,Water,paani
-oil,Cooking Oil,tel|oil|mustard oil|sunflower oil
-turmeric,Turmeric,haldi|turmeric powder
+canonicalId,name,synonyms,tags
+tomato,Tomato,tamatar|tomatoes|tamaatar|tomato puree|homemade tomato puree|tomato paste,
+onion,Onion,pyaaz|pyaz|kanda|onions|red onion,nojain
+shallots,Shallots,pearl onions|sambar onions|small onions|chinna vengayam,nojain
+spring_onion,Spring Onion,hara pyaaz|scallion|green onion|spring onion greens|spring onions,nojain
+potato,Potato,aloo|alu|batata|potatoes|baby potatoes,nojain
+sweet_potato,Sweet Potato,shakarkandi|sweet potatoes|ratalu,nojain
+garlic,Garlic,lahsun|lehsun|garlic cloves|bud garlic|long garlic|garlic paste,nojain
+ginger,Ginger,adrak|ginger root|ginger paste,nojain
+ginger_garlic_paste,Ginger Garlic Paste,ginger garlic paste|adrak lehsun paste,nojain
+green_chilli,Green Chilli,hari mirch|green chili|green chillies|green chilies|chilli|mirchi|green chilli paste|badi hari mirch|large green chilli,
+coriander_leaves,Coriander Leaves,dhaniya|dhania|cilantro|hara dhaniya|coriander|green coriander|of coriander|of green coriander|coriander sprigs|dhania leaves,
+mint,Mint,pudina|mint leaves|peppermint,
+curry_leaves,Curry Leaves,few curry leaves|kadi patta|kadhi patta|curry leaf,
+dill_leaves,Dill Leaves,suva|shepu|sabbasige soppu|dill,
+spinach,Spinach,palak|spinach leaves,
+fenugreek_leaves,Fenugreek Leaves,methi|methi leaves|fresh methi,
+amaranth_leaves,Amaranth Leaves,green amaranth leaves|red amaranth leaves|chaulai|thotakura|keerai,
+drumstick_leaves,Drumstick Leaves,moringa leaves|murungai keerai,
+radish_greens,Radish Greens,mooli ke patte|radish leaves,
+colocasia_leaves,Colocasia Leaves,arbi ke patte|patra leaves|taro leaves,
+cauliflower,Cauliflower,gobi|phool gobi|gobhi,
+broccoli,Broccoli,,
+cabbage,Cabbage,purple cabbage|red cabbage|patta gobi|band gobi|bandh gobhi,
+carrot,Carrot,gajar|carrots,nojain
+peas,Green Peas,matar|mutter|green peas|peas|frozen peas,
+capsicum,Capsicum,shimla mirch|bell pepper|green capsicum|red capsicum|yellow capsicum,
+okra,Okra,bhindi|lady finger|ladyfinger,
+brinjal,Brinjal,baingan|eggplant|aubergine|green brinjal|green aubergine,
+bottle_gourd,Bottle Gourd,lauki|doodhi|ghiya,
+ridge_gourd,Ridge Gourd,turai|peerkangai|ridge gourd skin,
+snake_gourd,Snake Gourd,pudalangai|pudulangai,
+bitter_gourd,Bitter Gourd,karela|pavakkai,
+ash_gourd,Ash Gourd,vellai poosanikai|white pumpkin|petha,
+tindora,Ivy Gourd,tindora|dondakaya|kovakkai|tondli,
+tinda,Apple Gourd,tinda|round gourd,
+chayote,Chayote,chow chow|chayote squash|seemebadnekai,
+cucumber,Cucumber,kheera|kakdi|cucumbers|mangalorean cucumber,
+zucchini,Zucchini,green zucchini,
+lemon,Lemon,nimbu|lime|lemons|lemon juice|lemon wedges|lemon zest|lime juice,
+beans,French Beans,green beans|french beans,
+cluster_beans,Cluster Beans,gawar phali|guar|kothavarangai,
+broad_beans,Broad Beans,avarekai|papdi|val papdi,
+yard_long_beans,Yard Long Beans,green chawli beans|karamani|barbati|chawli,
+mushroom,Mushroom,mushrooms|khumb|button mushrooms,nojain
+sweet_corn,Sweet Corn,corn|bhutta|makka|corn kernels|frozen corn,
+baby_corn,Baby Corn,,
+beetroot,Beetroot,chukandar|beet|chakundar,nojain
+radish,Radish,mooli|muli|radishes,nojain
+pumpkin,Pumpkin,kaddu|sitaphal|red pumpkin,
+elephant_yam,Elephant Yam,suran|jimikand|senai|oal,nojain
+colocasia,Colocasia,arbi|colocasia root|taro|seppankizhangu,nojain
+raw_banana,Raw Banana,kacha kela|plantain|vazhakkai,
+banana_stem,Banana Stem,vazhaithandu,
+lotus_stem,Lotus Stem,kamal kakdi|bhein,nojain
+raw_papaya,Raw Papaya,kacha papita,
+drumstick,Drumstick,moringa|murungakkai|drumsticks,
+celery,Celery,,
+lettuce,Lettuce,salad greens|iceberg lettuce|salad leaves,
+paneer,Paneer,cottage cheese|panir,
+tofu,Tofu,soy paneer,
+milk,Milk,doodh|dudh|full cream milk|toned milk,
+flavored_milk,Flavoured Milk,flavored milk|milkshake|strawberry milk|chocolate milk|yogurt drink,
+curd,Curd,dahi|yogurt|yoghurt|hung curd|greek yogurt|plain yogurt,
+buttermilk,Buttermilk,chaas|chhaas|mattha,
+lassi,Lassi,sweet lassi,
+butter,Butter,makhan|amul butter,
+ghee,Ghee,desi ghee|clarified butter,
+cheese,Cheese,cheese spread|cheese slices|processed cheese|mozzarella|mozzarella cheese|cheddar|cheddar cheese|cheese cubes,
+cream,Fresh Cream,malai|cream|fresh cream,
+milk_powder,Milk Powder,dairy whitener,
+egg,Egg,anda|eggs|ande,egg
+chicken,Chicken,murgi|murg|chicken breast|boneless chicken|chicken thighs|chicken pieces,nonveg
+mutton,Mutton,gosht|goat meat|lamb|keema|minced meat|mutton keema,nonveg
+fish,Fish,rohu fish|pomfret fish|machli|machhli|hilsa|hilsa fish|sardine|sardine fish|seer fish|surmai|pomfret|rohu|fish fillet,nonveg
+prawns,Prawns,jhinga|shrimp|shrimps,nonveg
+bread,Bread,double roti|pav|white bread|brown bread|wheat brown bread|bread slices,
+bread_crumbs,Bread Crumbs,wheat bread crumbs|breadcrumbs,
+rice,Rice,chawal|basmati|basmati rice|raw rice|idli rice|broken raw rice|sona masoori|brown rice|boiled rice,
+rice_flour,Rice Flour,chawal ka atta,
+rice_rava,Rice Rava,idli rava,
+atta,Wheat Flour,gehun ka atta|whole wheat flour|chapati flour,
+maida,Refined Flour,all purpose flour|vivatta maida,
+besan,Gram Flour,chickpea flour|kadalai maavu,
+corn_flour,Corn Flour,cornflour|cornstarch|corn starch,
+ragi_flour,Ragi Flour,finger millet flour|nachni|nagli,
+jowar_flour,Jowar Flour,sorghum flour|jowar,
+bajra_flour,Bajra Flour,pearl millet flour|bajra,
+makki_atta,Maize Flour,makki ka atta|yellow corn meal flour|cornmeal,
+buckwheat_flour,Buckwheat Flour,kuttu ka atta|kuttu,
+rajgira_flour,Amaranth Flour,rajgira flour|rajgira,
+sattu,Sattu,roasted gram flour|sattu ka atta,
+suji,Semolina,sooji|rava|rawa|bombay rava,
+broken_wheat,Broken Wheat,dalia|godumai rava|lapsi,
+oats,Oats,instant oats|rolled oats|oatmeal|rolled oats or instant oats|oats flour,
+quinoa,Quinoa,,
+foxtail_millet,Foxtail Millet,kangni|thinai,
+barnyard_millet,Barnyard Millet,samak|bhagar|barnyard millet,
+sabudana,Sabudana,tapioca pearls|sago,
+poha,Flattened Rice,chivda|aval|beaten rice,
+puffed_rice,Puffed Rice,murmura|kurmura|mandakki,
+vermicelli,Vermicelli,semiya|seviyan|sevai|rice vermicelli noodles,
+toor_dal,Toor Dal,arhar dal|tuvar dal|pigeon pea|tur dal,
+moong_dal,Moong Dal,mung dal|yellow moong|yellow moong dal|split moong dal,
+green_moong,Green Moong,green moong dal|whole green moong|sabut moong,
+moong_sprouts,Moong Sprouts,green moong sprouts|sprouts|sprouted moong,
+masoor_dal,Masoor Dal,red lentil|lal masoor|pink masoor dal|red lentils,
+urad_dal,Urad Dal,white urad dal|split urad dal|urad dal flour,
+black_urad_dal,Black Urad Dal,whole urad dal|sabut urad|kaali dal,
+chana_dal,Chana Dal,bengal gram dal|split bengal gram,
+roasted_chana_dal,Roasted Chana Dal,roasted gram dal|pottukadalai|daria|phutana,
+chana,Chickpeas,chole|kabuli chana|chickpea|white chickpeas,
+kala_chana,Black Chickpeas,brown chickpeas|kala chana,
+green_chickpeas,Green Chickpeas,hara chana|cholia,
+rajma,Kidney Beans,red kidney beans,
+lobia,Black Eyed Beans,black eyed beans|lobia|rongi,
+horse_gram,Horse Gram,horse gram dal|kulith|kollu,
+moth_beans,Moth Beans,moth dal|matki,
+soy_chunks,Soya Chunks,soy chunks|soya nuggets|nutrela,
+idli_batter,Idli Dosa Batter,idli dosa batter|dosa batter|idli batter,
+apple,Apple,seb|apples,
+banana,Banana,kela|bananas,
+mango,Mango,aam|mangoes|raw mango,
+orange,Orange,santra|narangi|oranges,
+grapes,Grapes,angoor,
+pomegranate,Pomegranate,anar|pomegranate fruit kernels|pomegranate seeds,
+pineapple,Pineapple,ananas|pineapple slices,
+papaya,Papaya,papita,
+watermelon,Watermelon,tarbooz,
+guava,Guava,amrood,
+strawberries,Strawberries,strawberry,
+amla,Amla,nellikai|gooseberry|indian gooseberry,
+dates,Dates,khajur|kharjoor,
+raisins,Raisins,kishmish|kismis,
+cashews,Cashew Nuts,cashew nuts|kaju|cashews,
+almonds,Almonds,badam,
+walnuts,Walnuts,akhrot,
+pistachios,Pistachios,pista,
+peanuts,Peanuts,raw peanuts|roasted peanuts|moongphali|groundnuts|groundnut powder,
+makhana,Makhana,phool makhana|lotus seeds|fox nuts,
+coconut,Coconut,nariyal|grated coconut|fresh coconut|dessicated coconut|desiccated coconut|dry coconut|kopra|copra,
+coconut_milk,Coconut Milk,,
+tamarind,Tamarind,imli|tamarind paste|tamarind water|tamarind pulp,
+kokum,Kokum,malabar tamarind,
+jaggery,Jaggery,gur|gud,
+honey,Honey,shahad,nojain
+peanut_butter,Peanut Butter,,
+ketchup,Tomato Ketchup,ketchup|tomato sauce,
+red_chilli_sauce,Red Chilli Sauce,chilli sauce|hot sauce|chilli vinegar,
+chutney,Chutney,green chutney|hari chutney|sweet chutney|date tamarind chutney,
+pickle,Pickle,achaar|achar,
+jam,Jam,fruit jam|mixed fruit jam,
+mayonnaise,Mayonnaise,mayo,
+sev,Sev,bhujia|nylon sev,
+boondi,Boondi,,
+papad,Papad,papadum|appalam,
+noodles,Noodles,hakka noodles|maggi|instant noodles,
+pasta,Pasta,macaroni|penne,
+juice,Juice,orange juice|fruit juice|apple juice|green juice,
+soft_drink,Soft Drink,cold drink|soda|cola|sparkling drink|beverage bottle,
+chocolate,Chocolate,chocolate bar|dark chocolate,
+ice_cream,Ice Cream,kulfi,
+vegetable_stock,Vegetable Stock,veg stock|stock,
+leftover_rice,Cooked Rice,cooked rice|leftover rice|bhaat,
+leftover_dal,Cooked Dal,cooked dal|dal|leftover dal,
+leftover_sabzi,Cooked Sabzi,sabzi|sabji|leftover sabzi|curry,
+roti,Roti,chapati|phulka|leftover roti|paratha,
+salt,Salt,according to taste|namak|rock salt|sendha namak|salt to taste|as per taste|salt and pepper|black salt or rock salt,staple
+water,Water,paani|lukewarm water|hot water|chilled water|ice cubes|warm water,staple
+oil,Cooking Oil,tel|oil|mustard oil|sunflower oil|coconut oil|sesame oil|gingelly oil|olive oil|extra virgin olive oil|figaro pure olive oil|peanut oil|groundnut oil|refined oil|vegetable oil,staple
+sugar,Sugar,cheeni|shakkar|caster sugar|brown sugar|demerara sugar|powdered sugar,staple
+turmeric,Turmeric,haldi|turmeric powder|spoon turmeric powder,staple
+cumin_seeds,Cumin Seeds,jeera|cumin|zeera,staple
+cumin_powder,Cumin Powder,jeera powder|roasted cumin powder,staple
+red_chilli_powder,Red Chilli Powder,red chili powder|kashmiri red chilli powder|chilli powder|lal mirch powder,staple
+dry_red_chilli,Dry Red Chilli,red chilli|dry red chillies|dry red chilli|dry red chili|dry red chilies|red chillies|red chili|byadagi dried chillies|kashmiri dry red chillies|sukhi lal mirch,staple
+red_chilli_flakes,Red Chilli Flakes,chilli flakes,staple
+mustard_seeds,Mustard Seeds,rye|rai|sarson|mustard|yellow mustard seeds|split mustard seeds|rai kuria,staple
+mustard_powder,Mustard Powder,,staple
+hing,Asafoetida,hing|asafetida|ssp asafoetida|compounded asafoetida,staple
+garam_masala,Garam Masala,garam masala powder,staple
+coriander_powder,Coriander Powder,dhania powder|dhaniya powder,staple
+coriander_seeds,Coriander Seeds,sabut dhania,staple
+black_pepper,Black Pepper,black pepper powder|black peppercorns|black pepper corns|pepper powder|pepper|kali mirch|peppercorns,staple
+methi_seeds,Fenugreek Seeds,split methi seeds|methi kuria|methi seeds|methi dana|methi powder|fenugreek powder|fenugreek,staple
+kasuri_methi,Kasuri Methi,dried fenugreek leaves,staple
+fennel_seeds,Fennel Seeds,saunf|fennel|fennel powder,staple
+ajwain,Ajwain,carom seeds|omam,staple
+kalonji,Nigella Seeds,kalonji|onion nigella seeds|onion seeds,staple
+cinnamon,Cinnamon,dalchini|cinnamon stick|cinnamon powder,staple
+cloves,Cloves,laung|long|lavang,staple
+cardamom,Green Cardamom,elaichi|cardamom|cardamom pods|cardamom powder|green cardamom,staple
+black_cardamom,Black Cardamom,badi elaichi,staple
+bay_leaf,Bay Leaf,tej patta|bay leaves,staple
+star_anise,Star Anise,chakri phool|star anis,staple
+nutmeg,Nutmeg,jaiphal|nutmeg powder,staple
+mace,Mace,javitri,staple
+kala_jeera,Black Cumin,kala jeera|shahi jeera,staple
+poppy_seeds,Poppy Seeds,khus khus|khaskhas,staple
+sesame_seeds,Sesame Seeds,til|til seeds|sesame|white sesame seeds|black sesame seeds,staple
+saffron,Saffron,kesar|saffron strands,staple
+amchur,Dry Mango Powder,amchur powder|amchur|amchoor|mango powder,staple
+anardana,Anardana Powder,pomegranate seed powder|anardana,staple
+dry_ginger_powder,Dry Ginger Powder,sonth|saunth,staple
+chaat_masala,Chaat Masala,chaat masala powder,staple
+sambar_powder,Sambar Powder,sambar masala,staple
+rasam_powder,Rasam Powder,,staple
+goda_masala,Goda Masala,maharashtrian goda masala,staple
+panch_phoran,Panch Phoran,panch phoran masala,staple
+chana_masala_powder,Chana Masala Powder,chole masala,staple
+curry_powder,Curry Powder,,staple
+idli_podi,Idli Podi,idli dosa podi|milagai podi|gunpowder,staple
+black_salt,Black Salt,kala namak,staple
+baking_soda,Baking Soda,cooking soda|soda bicarbonate|meetha soda,staple
+baking_powder,Baking Powder,,staple
+eno,Fruit Salt,eno|enos fruit salt|fruit salt,staple
+vinegar,Vinegar,white vinegar,staple
+soy_sauce,Soy Sauce,soya sauce|light soy sauce,staple
+oregano,Oregano,dried oregano|mixed herbs,staple
+stone_flower,Stone Flower,kalpasi|dagad phool,staple
+tea_leaves,Tea Leaves,chai patti|tea,staple
+instant_coffee,Coffee Powder,instant coffee powder|coffee,staple
+rose_water,Rose Water,gulab jal,staple
+pointed_gourd,Pointed Gourd,parval|parwal,
+sponge_gourd,Sponge Gourd,gilka|silk squash|turiya,
+knol_khol,Knol Khol,ganth gobi|kadam|kohlrabi,
+mustard_greens,Mustard Greens,sarson ka saag|sarson saag,
+jackfruit,Jackfruit,kathal|raw jackfruit|jackfruit seeds,
+khoya,Khoya,mawa|khoa,
+condensed_milk,Condensed Milk,milkmaid|sweetened condensed milk,
+dry_fruits,Dry Fruits,mixed nuts|mixed dry fruits,
+chia_seeds,Chia Seeds,sabja|basil seeds,
+flax_seeds,Flax Seeds,alsi|flax seed powder|flax meal|flaxseed,
+pumpkin_seeds,Pumpkin Seeds,,
+water_chestnut,Water Chestnut,singhade|singhara,
+tulsi,Tulsi,holy basil|basil,
+parsley,Parsley,parsley leaves,
+cocoa_powder,Cocoa Powder,,staple
+paprika,Paprika,paprika powder,staple
+pav_bhaji_masala,Pav Bhaji Masala,,staple
+kashmiri_masala,Kashmiri Masala,kashmiri masala powder,staple
+vanilla_extract,Vanilla Extract,vanilla essence,staple

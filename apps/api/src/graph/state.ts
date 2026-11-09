@@ -1,18 +1,33 @@
 import { Annotation } from "@langchain/langgraph";
-import type { DetectedItem, ReviewItem } from "@ftc/shared";
+import type { DetectedItem, Ingredient, Recipe, ReviewItem, UserPrefs } from "@ftc/shared";
+import type { RetrievedDoc } from "../services/recipes";
 
 const replace = <T>(fallback: () => T) => Annotation<T>({ reducer: (_prev, next) => next, default: fallback });
 
-// Fields for later nodes (prefs, recipes, cart, …) are added in the milestone that needs them.
+// Cart fields (missing, cart, messages) are added in M3.
 export const ScanState = Annotation.Root({
   scanId: Annotation<string>,
   userId: Annotation<string>,
   imageUrl: Annotation<string>,
+  prefs: Annotation<UserPrefs>,
   detected: replace<DetectedItem[]>(() => []),
   /** Normalized detections shown on the review screen. */
   items: replace<ReviewItem[]>(() => []),
+  /** What the user confirmed after editing. */
+  confirmed: replace<Ingredient[]>(() => []),
+  retrieved: replace<RetrievedDoc[]>(() => []),
+  recipes: replace<Recipe[]>(() => []),
+  /** Why the last generateRecipes answer was rejected; drives the single retry. */
+  recipeIssue: replace<string | null>(() => null),
+  selectedRecipeId: replace<string | null>(() => null),
   attempts: replace<number>(() => 0),
+  genAttempts: replace<number>(() => 0),
 });
 
 export type ScanStateT = typeof ScanState.State;
 export type ScanUpdate = typeof ScanState.Update;
+
+/** Payloads of the two human-in-the-loop pauses. */
+export type ReviewInterrupt = { type: "review_items"; items: ReviewItem[] };
+export type PickInterrupt = { type: "pick_recipe"; recipes: Recipe[] };
+export type ScanInterrupt = ReviewInterrupt | PickInterrupt;

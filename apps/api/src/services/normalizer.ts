@@ -73,11 +73,28 @@ export function parseQty(raw: string | null): { qty: number | null; unit: string
   return { qty, unit: rest ? singular(rest) : null };
 }
 
-let lexicon: Lexicon | null = null;
+/** canonicalId → tags (nonveg | egg | nojain | staple) */
+export type CanonTags = Map<string, string[]>;
+
+let canon: Promise<{ lexicon: Lexicon; tags: CanonTags }> | null = null;
+
+function loadCanon() {
+  canon ??= prisma.ingredientCanon
+    .findMany({ select: { canonicalId: true, name: true, synonyms: true, tags: true } })
+    .then((rows) => ({ lexicon: buildLexicon(rows), tags: new Map(rows.map((r) => [r.canonicalId, r.tags])) }))
+    .catch((err: unknown) => {
+      canon = null; // don't cache a failed load
+      throw err;
+    });
+  return canon;
+}
 
 export async function loadLexicon(): Promise<Lexicon> {
-  lexicon ??= buildLexicon(await prisma.ingredientCanon.findMany());
-  return lexicon;
+  return (await loadCanon()).lexicon;
+}
+
+export async function loadCanonTags(): Promise<CanonTags> {
+  return (await loadCanon()).tags;
 }
 
 let embeddingsSeeded = false;

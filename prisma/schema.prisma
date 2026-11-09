@@ -51,21 +51,33 @@ model Scan {
 }
 
 model IngredientCanon {
-  canonicalId String                       @id
-  name        String
-  synonyms    String[]
-  embedding   Unsupported("vector(1536)")?
-  products    Product[]
+  canonicalId  String                       @id
+  name         String
+  synonyms     String[]
+  /// nonveg | egg | nojain | staple (staples are assumed in stock, never "missing")
+  tags         String[]                     @default([])
+  embedding    Unsupported("vector(1536)")?
+  /// The text `embedding` was computed from; re-seeding re-embeds only when it changes.
+  embeddedText String?
+  products     Product[]
 }
 
 model RecipeDoc {
-  id          String                       @id
-  title       String
-  ingredients Json
-  steps       Json
-  timeMins    Int
-  dietTags    String[]
-  embedding   Unsupported("vector(1536)")?
+  id            String                       @id
+  title         String
+  /// Ingredient[] (canonicalId, name, qty, unit)
+  ingredients   Json
+  ingredientIds String[]
+  steps         Json
+  timeMins      Int
+  /// Diets that can eat this dish, e.g. ["jain","veg","egg","nonveg"]
+  dietTags      String[]
+  course        String
+  sourceUrl     String
+  embedding     Unsupported("vector(1536)")?
+  embeddedText  String?
+
+  @@index([dietTags], type: Gin)
 }
 
 model Product {
