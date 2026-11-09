@@ -1,0 +1,31 @@
+{
+  "name": "fridgetocart",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "typecheck": "pnpm -r typecheck && tsc -p .",
+    "test": "pnpm -r test",
+    "db:up": "docker compose up -d",
+    "db:generate": "pnpm db:sync-dim && prisma generate",
+    "db:push": "pnpm db:sync-dim && prisma db push",
+    "db:seed": "tsx prisma/seed/seed.ts",
+    "db:sync-dim": "tsx prisma/sync-embed-dim.ts",
+    "compare:vision": "tsx scripts/compare-vision.ts"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "@ftc/shared": "workspace:^",
+    "@types/node": "^26.6.6",
+    "dotenv": "^18.0.10",
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  }
+}
