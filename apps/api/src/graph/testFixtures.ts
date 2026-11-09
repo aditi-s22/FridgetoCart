@@ -56,6 +56,7 @@ export const BASE_STATE: ScanStateT = {
   recipesCached: false,
   recipeIssue: null,
   selectedRecipeId: null,
+  substitutions: [],
   missing: [],
   cartId: null,
   cart: null,

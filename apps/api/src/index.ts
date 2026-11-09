@@ -7,6 +7,7 @@ import { errorHandler } from "./http";
 import { cartRoutes } from "./routes/cart";
 import { prefs } from "./routes/prefs";
 import { scanSteps } from "./routes/scanSteps";
+import { substitutionRoutes } from "./routes/substitutions";
 import { scans } from "./routes/scans";
 import { traceRoutes } from "./routes/trace";
 import { uploads } from "./routes/uploads";
@@ -20,7 +21,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 app.use("/uploads", uploads); // presign requires a user; the local PUT/GET use unguessable keys
-app.use("/scans", requireUser, scans, scanSteps, cartRoutes, traceRoutes);
+app.use("/scans", requireUser, scans, scanSteps, substitutionRoutes, cartRoutes, traceRoutes);
 app.use("/prefs", requireUser, prefs);
 app.use((_req, res) => {
   res.status(404).json({ error: { code: "not_found", message: "Route not found" } });

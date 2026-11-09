@@ -8,6 +8,7 @@ import { getGraph, runOf } from "../graph/build";
 import { interruptOf, progressOf } from "../graph/progress";
 import type { ScanStateT } from "../graph/state";
 import { AppError, parse } from "../http";
+import { makeSubCtx, vetAccepted } from "../services/substitutions";
 import { withScan } from "../services/trace";
 
 /**
@@ -57,14 +58,25 @@ scanSteps.post("/:id/review", async (req, res) => {
 
 scanSteps.post("/:id/pick", async (req, res) => {
   const scan = await ownScanWithUser(req.params.id, userIdOf(res.locals));
-  const { recipeId } = parse(PickRequest, req.body);
+  const { recipeId, substitutions } = parse(PickRequest, req.body);
   const graph = await getGraph();
   const before = await progressOf(graph, scan.id);
   if (before.pending?.type !== "pick_recipe") throw new AppError(409, "not_awaiting_pick", "This scan is not waiting for a recipe pick");
-  if (!before.pending.recipes.some((r) => r.id === recipeId)) throw new AppError(400, "bad_recipe", "Unknown recipe for this scan");
+  const recipe = before.pending.recipes.find((r) => r.id === recipeId);
+  if (!recipe) throw new AppError(400, "bad_recipe", "Unknown recipe for this scan");
+  // The client is untrusted: re-check every accepted substitution against the stored recipe, diet and avoid list.
+  let accepted = substitutions;
+  if (substitutions.length > 0) {
+    const prefs = { diet: Diet.parse(scan.user.diet), avoid: scan.user.avoid, maxTimeMins: scan.user.maxTimeMins };
+    try {
+      accepted = vetAccepted(substitutions, recipe, await makeSubCtx(prefs, before.values.confirmed ?? []));
+    } catch (err) {
+      throw new AppError(400, "bad_substitution", (err as Error).message);
+    }
+  }
 
   const started = Date.now();
-  const out = (await withScan(scan.id, () => graph.invoke(new Command({ resume: recipeId }), runOf(scan.id)))) as Partial<ScanStateT>;
+  const out = (await withScan(scan.id, () => graph.invoke(new Command({ resume: recipeId, update: { substitutions: accepted } }), runOf(scan.id)))) as Partial<ScanStateT>;
   await prisma.scan.update({ where: { id: scan.id }, data: { status: "done", selectedRecipeId: recipeId } });
   console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: "cart", latencyMs: Date.now() - started }));
   const body: PickResponse = { status: "done", cart: out.cart ?? null };

@@ -1,5 +1,6 @@
 import { ApiError } from "@ftc/shared";
 import type {
+  AppliedSubstitution,
   Cart,
   CreateScanResponse,
   Ingredient,
@@ -9,6 +10,7 @@ import type {
   ReviewResponse,
   ScanSummary,
   ScanView,
+  SuggestSubstitutionsResponse,
   UserPrefs,
 } from "@ftc/shared";
 
@@ -57,8 +59,16 @@ export const api = {
   getScan: (id: string) => call<ScanView>(`/scans/${encodeURIComponent(id)}`),
   review: (id: string, items: Ingredient[]) =>
     call<ReviewResponse>(`/scans/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify({ items }) }),
-  pick: (id: string, recipeId: string) =>
-    call<PickResponse>(`/scans/${encodeURIComponent(id)}/pick`, { method: "POST", body: JSON.stringify({ recipeId }) }),
+  pick: (id: string, recipeId: string, substitutions: AppliedSubstitution[] = []) =>
+    call<PickResponse>(`/scans/${encodeURIComponent(id)}/pick`, {
+      method: "POST",
+      body: JSON.stringify({ recipeId, substitutions }),
+    }),
+  suggestSubstitutions: (id: string, recipeId: string) =>
+    call<SuggestSubstitutionsResponse>(
+      `/scans/${encodeURIComponent(id)}/recipes/${encodeURIComponent(recipeId)}/substitutions`,
+      { method: "POST", body: "{}" },
+    ),
   setCartQty: (id: string, productId: string, qty: number) =>
     call<Cart>(`/scans/${encodeURIComponent(id)}/cart/items/${encodeURIComponent(productId)}`, {
       method: "PUT",

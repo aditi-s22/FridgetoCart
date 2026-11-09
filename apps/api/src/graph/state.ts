@@ -1,6 +1,6 @@
 import type { BaseMessage } from "@langchain/core/messages";
 import { Annotation, messagesStateReducer } from "@langchain/langgraph";
-import type { Cart, DetectedItem, Ingredient, Recipe, ReviewItem, UserPrefs } from "@ftc/shared";
+import type { AppliedSubstitution, Cart, DetectedItem, Ingredient, Recipe, ReviewItem, UserPrefs } from "@ftc/shared";
 import type { RetrievedDoc } from "../services/recipes";
 
 const replace = <T>(fallback: () => T) => Annotation<T>({ reducer: (_prev, next) => next, default: fallback });
@@ -24,6 +24,8 @@ export const ScanState = Annotation.Root({
   /** Why the last generateRecipes answer was rejected; drives the single retry. */
   recipeIssue: replace<string | null>(() => null),
   selectedRecipeId: replace<string | null>(() => null),
+  /** Substitutions the user accepted for the selected recipe (validated by the pick route). */
+  substitutions: replace<AppliedSubstitution[]>(() => []),
   /** Non-staple ingredients of the chosen recipe the user doesn't have. */
   missing: replace<Ingredient[]>(() => []),
   cartId: replace<string | null>(() => null),

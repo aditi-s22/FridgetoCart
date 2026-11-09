@@ -76,6 +76,7 @@ scans.get("/:id", async (req, res) => {
     confirmed: p.values.confirmed ?? [],
     recipes: p.values.recipes ?? [],
     selectedRecipeId: p.values.selectedRecipeId ?? null,
+    substitutions: p.values.substitutions ?? [],
     cart: await liveCart(p),
   };
   res.json(body);

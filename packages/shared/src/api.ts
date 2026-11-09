@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Cart, Ingredient, Recipe, ReviewItem, ScanStatus } from "./domain";
+import { AppliedSubstitution, Cart, Ingredient, Recipe, ReviewItem, ScanStatus, SubstitutionSuggestion } from "./domain";
 
 export const ApiError = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
@@ -33,7 +33,7 @@ export type ReviewRequest = z.infer<typeof ReviewRequest>;
 export const ReviewResponse = z.object({ status: ScanStatus, recipes: z.array(Recipe) });
 export type ReviewResponse = z.infer<typeof ReviewResponse>;
 
-export const PickRequest = z.object({ recipeId: z.string().min(1) });
+export const PickRequest = z.object({ recipeId: z.string().min(1), substitutions: z.array(AppliedSubstitution).max(30).default([]) });
 export type PickRequest = z.infer<typeof PickRequest>;
 
 export const PickResponse = z.object({ status: ScanStatus, cart: Cart.nullable() });
@@ -50,6 +50,8 @@ export const ScanView = z.object({
   confirmed: z.array(Ingredient),
   recipes: z.array(Recipe),
   selectedRecipeId: z.string().nullable(),
+  /** Substitutions applied to the picked recipe (empty if none). */
+  substitutions: z.array(AppliedSubstitution),
   cart: Cart.nullable(),
 });
 export type ScanView = z.infer<typeof ScanView>;
@@ -78,3 +80,6 @@ export const ScanSummary = z.object({
   recipeTitle: z.string().nullable(),
 });
 export type ScanSummary = z.infer<typeof ScanSummary>;
+
+export const SuggestSubstitutionsResponse = z.object({ suggestions: z.array(SubstitutionSuggestion) });
+export type SuggestSubstitutionsResponse = z.infer<typeof SuggestSubstitutionsResponse>;

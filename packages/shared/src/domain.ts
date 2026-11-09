@@ -137,3 +137,77 @@ export type ScanStatus = z.infer<typeof ScanStatus>;
 
 /** Items below this confidence are highlighted on the review screen. */
 export const LOW_CONFIDENCE = 0.6;
+
+/** A substitution the user accepted for one missing ingredient of a recipe. */
+export const AppliedSubstitution = z.object({
+  originalId: z.string().min(1),
+  substituteId: z.string().min(1),
+  substituteName: z.string().min(1),
+  qty: z.number().nullable(),
+  unit: z.string().nullable(),
+  /** Cooking-method changes the swap needs; appended to the recipe's steps. */
+  stepChanges: z.array(z.string()),
+});
+export type AppliedSubstitution = z.infer<typeof AppliedSubstitution>;
+
+export const SubstitutionOption = AppliedSubstitution.omit({ originalId: true }).extend({
+  /** Derived by the server from the scan, never taken from the model. */
+  availability: z.enum(["in_fridge", "must_buy"]),
+  reason: z.string(),
+  flavorImpact: z.string(),
+});
+export type SubstitutionOption = z.infer<typeof SubstitutionOption>;
+
+/** Options for one missing ingredient: the first is the best, the rest are alternatives. */
+export const SubstitutionSuggestion = z.object({
+  originalId: z.string(),
+  originalName: z.string(),
+  options: z.array(SubstitutionOption).min(1),
+});
+export type SubstitutionSuggestion = z.infer<typeof SubstitutionSuggestion>;
+
+/** What the LLM returns; ids are checked against the canon and the user's diet afterwards. */
+export const GeneratedSubstitutions = z.object({
+  suggestions: z.array(
+    z.object({
+      originalId: z.string(),
+      options: z
+        .array(
+          z.object({
+            substituteId: z.string(),
+            qty: z.number().nullable(),
+            unit: z.string().nullable(),
+            reason: z.string().min(1),
+            flavorImpact: z.string(),
+            stepChanges: z.array(z.string()),
+          }),
+        )
+        .max(3),
+    }),
+  ),
+});
+export type GeneratedSubstitutions = z.infer<typeof GeneratedSubstitutions>;
+
+/**
+ * The recipe as the user will cook it: the original plus accepted swaps. Pure; the original is
+ * never mutated. `haveIds` are the canonical ids the user has, used to recompute have/missing.
+ */
+export function applySubstitutions(recipe: Recipe, subs: AppliedSubstitution[], haveIds: ReadonlySet<string>): Recipe {
+  const active = subs.filter((s) => recipe.missing.includes(s.originalId));
+  if (active.length === 0) return recipe;
+  const byOriginal = new Map(active.map((s) => [s.originalId, s]));
+  const ingredients = recipe.ingredients.map((i) => {
+    const s = byOriginal.get(i.canonicalId);
+    return s ? { canonicalId: s.substituteId, name: s.substituteName, qty: s.qty, unit: s.unit } : i;
+  });
+  const have = [...recipe.have];
+  const missing: string[] = [];
+  for (const id of recipe.missing) {
+    const s = byOriginal.get(id);
+    const next = s ? s.substituteId : id;
+    if (haveIds.has(next)) have.push(next);
+    else if (!missing.includes(next)) missing.push(next);
+  }
+  const steps = [...recipe.steps, ...active.flatMap((s) => s.stepChanges.map((c) => `Substitution (${s.substituteName}): ${c}`))];
+  return { ...recipe, ingredients, have, missing, steps };
+}

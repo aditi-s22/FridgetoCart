@@ -1,6 +1,6 @@
 "use client";
 
-import type { ScanView } from "@ftc/shared";
+import type { AppliedSubstitution, ScanView } from "@ftc/shared";
 import { ChefHat, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -33,6 +33,8 @@ export default function RecipesPage() {
   const [scan, setScan] = useState<ScanView | null>(null);
   const [picking, setPicking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Accepted substitutions per recipe id; sent with the pick. */
+  const [subs, setSubs] = useState<Record<string, AppliedSubstitution[]>>({});
 
   useEffect(() => {
     api
@@ -51,7 +53,7 @@ export default function RecipesPage() {
     setPicking(recipeId);
     setError(null);
     try {
-      await api.pick(id, recipeId);
+      await api.pick(id, recipeId, subs[recipeId] ?? []);
       router.push(`/scans/${id}/cart`);
     } catch (err) {
       setError(
@@ -86,6 +88,7 @@ export default function RecipesPage() {
   }
 
   const picked = scan.selectedRecipeId !== null;
+  const haveIds = new Set(scan.confirmed.map((i) => i.canonicalId));
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -131,6 +134,10 @@ export default function RecipesPage() {
           <RecipeCard
             key={r.id}
             recipe={r}
+            scanId={id}
+            haveIds={haveIds}
+            substitutions={subs[r.id] ?? []}
+            onSubstitutionsChange={(next) => setSubs((prev) => ({ ...prev, [r.id]: next }))}
             selected={scan.selectedRecipeId === r.id}
             disabled={picked || picking !== null}
             picking={picking === r.id}

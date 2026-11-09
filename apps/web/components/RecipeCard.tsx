@@ -1,8 +1,9 @@
 "use client";
 
-import type { Recipe } from "@ftc/shared";
-import { Check, ChevronDown, Clock, ExternalLink, Loader2, Users } from "lucide-react";
+import { type AppliedSubstitution, type Recipe, applySubstitutions } from "@ftc/shared";
+import { ArrowRightLeft, Check, ChevronDown, Clock, ExternalLink, Loader2, Users } from "lucide-react";
 import { useState } from "react";
+import { SubstitutionPanel } from "@/components/SubstitutionPanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,15 +23,33 @@ const HEADER_GRADIENTS: Record<string, string> = {
 };
 
 type Props = {
+  /** The original recipe; substitutions are layered on top for display and never stored on it. */
   recipe: Recipe;
+  scanId: string;
+  /** canonicalIds of the confirmed fridge items. */
+  haveIds: ReadonlySet<string>;
+  substitutions: AppliedSubstitution[];
+  onSubstitutionsChange: (subs: AppliedSubstitution[]) => void;
   selected: boolean;
   disabled: boolean;
   picking: boolean;
   onPick: () => void;
 };
 
-export function RecipeCard({ recipe, selected, disabled, picking, onPick }: Props) {
+export function RecipeCard({
+  recipe: original,
+  scanId,
+  haveIds,
+  substitutions,
+  onSubstitutionsChange,
+  selected,
+  disabled,
+  picking,
+  onPick,
+}: Props) {
   const [open, setOpen] = useState(false);
+  const recipe = applySubstitutions(original, substitutions, haveIds);
+  const swappedIn = new Map(substitutions.map((s) => [s.substituteId, s]));
   const nameOf = (id: string) =>
     recipe.ingredients.find((i) => i.canonicalId === id)?.name ?? id;
   const total = recipe.have.length + recipe.missing.length;
@@ -38,6 +57,15 @@ export function RecipeCard({ recipe, selected, disabled, picking, onPick }: Prop
   const gradient = HEADER_GRADIENTS[recipe.dietTags[0] ?? ""] ?? "from-stone-600 to-stone-500";
   const haveRatio = total > 0 ? recipe.have.length / total : 0;
   const allHave = recipe.missing.length === 0;
+  const swapLabel = (id: string) => {
+    const s = swappedIn.get(id);
+    const from = s && original.ingredients.find((i) => i.canonicalId === s.originalId)?.name;
+    return s ? (
+      <span className="ml-1 inline-flex items-center gap-0.5 opacity-70">
+        <ArrowRightLeft size={10} /> for {from ?? s.originalId}
+      </span>
+    ) : null;
+  };
 
   return (
     <article
@@ -101,6 +129,7 @@ export function RecipeCard({ recipe, selected, disabled, picking, onPick }: Prop
               className="rounded-full bg-brand-muted px-2.5 py-0.5 text-xs font-medium text-brand"
             >
               {nameOf(id)}
+              {swapLabel(id)}
             </span>
           ))}
           {recipe.missing.map((id) => (
@@ -109,9 +138,20 @@ export function RecipeCard({ recipe, selected, disabled, picking, onPick }: Prop
               className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700"
             >
               + {nameOf(id)}
+              {swapLabel(id)}
             </span>
           ))}
         </div>
+
+        {original.missing.length > 0 && (
+          <SubstitutionPanel
+            scanId={scanId}
+            recipeId={original.id}
+            accepted={substitutions}
+            disabled={disabled}
+            onChange={onSubstitutionsChange}
+          />
+        )}
 
         {/* Steps accordion */}
         <button

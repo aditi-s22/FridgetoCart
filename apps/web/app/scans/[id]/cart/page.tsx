@@ -2,6 +2,7 @@
 
 import type { Cart, ScanView } from "@ftc/shared";
 import {
+  ArrowRightLeft,
   CheckCircle2,
   Loader2,
   PackageOpen,
@@ -87,6 +88,18 @@ export default function CartPage() {
           </span>
           .
         </p>
+        {scan.substitutions.length > 0 && (
+          <ul className="mt-2 space-y-1 text-sm text-stone-600">
+            {scan.substitutions.map((s) => (
+              <li key={s.originalId} className="flex items-center gap-1.5">
+                <ArrowRightLeft size={13} className="text-brand" />
+                Substituted{" "}
+                {recipe?.ingredients.find((i) => i.canonicalId === s.originalId)?.name ?? s.originalId} with{" "}
+                <span className="font-medium text-stone-800">{s.substituteName}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* ── All-in-pantry state ──────────────────────── */}
