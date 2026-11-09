@@ -1,0 +1,100 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // Neon: pooled URL for the app, direct URL for schema pushes/migrations
+  directUrl  = env("DATABASE_URL_UNPOOLED")
+  extensions = [vector]
+}
+
+enum ScanStatus {
+  detecting
+  awaiting_review
+  generating
+  awaiting_pick
+  building_cart
+  done
+  failed
+}
+
+enum Diet {
+  veg
+  nonveg
+  jain
+  egg
+}
+
+model User {
+  id          String   @id
+  email       String   @unique
+  diet        Diet     @default(veg)
+  avoid       String[] @default([])
+  maxTimeMins Int      @default(30)
+  scans       Scan[]
+}
+
+model Scan {
+  id               String     @id @default(cuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id])
+  imageUrl         String
+  status           ScanStatus @default(detecting)
+  selectedRecipeId String?
+  createdAt        DateTime   @default(now())
+  cart             Cart?
+
+  @@index([userId, createdAt])
+}
+
+model IngredientCanon {
+  canonicalId String                       @id
+  name        String
+  synonyms    String[]
+  embedding   Unsupported("vector(1536)")?
+  products    Product[]
+}
+
+model RecipeDoc {
+  id          String                       @id
+  title       String
+  ingredients Json
+  steps       Json
+  timeMins    Int
+  dietTags    String[]
+  embedding   Unsupported("vector(1536)")?
+}
+
+model Product {
+  id          String          @id
+  canonicalId String
+  ingredient  IngredientCanon @relation(fields: [canonicalId], references: [canonicalId])
+  name        String
+  unit        String
+  price       Float
+  stock       Int
+  cartItems   CartItem[]
+}
+
+model Cart {
+  id     String     @id @default(cuid())
+  scanId String     @unique
+  scan   Scan       @relation(fields: [scanId], references: [id])
+  total  Float      @default(0)
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  qty       Int
+  price     Float
+
+  @@unique([cartId, productId])
+}
