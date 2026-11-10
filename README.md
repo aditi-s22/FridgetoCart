@@ -121,8 +121,9 @@ detectItems → (avg confidence < 0.6 → detectStrong) → normalize → humanR
   nothing, as with a blurry photo), `detectStrong` re-runs detection with `VISION_MODEL_STRONG`. If the
   strong model fails, the scan continues with the fast result.
 - **Checkpoints** are written once per request, when the run pauses or ends (`durability: "exit"`),
-  because each costs several Neon round trips. A crash mid-run leaves the scan at its last pause;
-  repeating the request is safe. A custom `FastPostgresSaver` writes a checkpoint's channels in one statement.
+  because each costs several Neon round trips. A process crash mid-run leaves the scan at its last pause, so repeating the request is safe.
+  If a run *fails* after the recipe pick (for example the store is down), the checkpoint is saved mid-graph;
+  repeating `POST /pick` for the same recipe then resumes the cart build instead of returning 409. A custom `FastPostgresSaver` writes a checkpoint's channels in one statement.
 - **Cart**: `diffMissing` takes the chosen (effective) recipe's ingredients minus what the user has,
   minus staples, with no LLM. `cartAgent` is the LLM bound to three store tools and works in parallel
   (all searches, then all stock checks, then all adds), so a cart usually takes 3–4 turns.

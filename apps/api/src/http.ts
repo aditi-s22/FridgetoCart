@@ -22,6 +22,8 @@ export function parse<T extends z.ZodTypeAny>(schema: T, input: unknown): z.infe
 
 export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, _next) => {
   if (err instanceof AppError) {
+    // Expected errors (4xx) are the client's problem; 5xx ones (store or LLM down) must be visible in the logs.
+    if (err.status >= 500) console.error(`[error] ${err.status} ${err.code}: ${err.message}`);
     res.status(err.status).json({ error: { code: err.code, message: err.message } });
     return;
   }

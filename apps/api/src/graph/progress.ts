@@ -20,6 +20,15 @@ export async function progressOf(graph: ScanGraph, scanId: string): Promise<Prog
   return { values: snap.values as Partial<ScanStateT>, pending, next: snap.tasks.map((t) => t.name) };
 }
 
+/**
+ * A pick whose cart build failed (store or model down) leaves the run stopped mid-graph: the recipe is
+ * already selected, no pause is pending, and the next nodes are still queued. Repeating the pick for
+ * the same recipe can then continue the run instead of starting over.
+ */
+export function canResumePick(p: Progress, recipeId: string): boolean {
+  return p.pending === null && p.values.selectedRecipeId === recipeId && p.next.length > 0;
+}
+
 /** The pause a just-finished `invoke` stopped at, read from its output (saves a checkpoint read). */
 export function interruptOf(out: unknown): ScanInterrupt | null {
   const list = (out as { __interrupt__?: { value: unknown }[] } | null)?.__interrupt__;

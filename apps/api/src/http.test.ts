@@ -23,3 +23,15 @@ describe("errorHandler", () => {
     expect(JSON.stringify(out.body)).not.toContain("hunter2");
   });
 });
+
+describe("errorHandler logging", () => {
+  it("logs 5xx AppErrors (store or LLM down) but not 4xx", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    run(new AppError(502, "store_unavailable", "Store is unreachable"));
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(String(spy.mock.calls[0]?.[0])).toContain("store_unavailable");
+    spy.mockClear();
+    run(new AppError(409, "not_awaiting_pick", "x"));
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
