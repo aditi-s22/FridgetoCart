@@ -87,10 +87,10 @@ export default function RecipesPage() {
     );
   }
 
-  // A recipe can be selected while the scan still awaits a pick: the earlier attempt failed while
-  // building the cart. Then only that recipe can be retried; otherwise a selection means we are done.
-  const retryId = scan.status === "awaiting_pick" ? scan.selectedRecipeId : null;
-  const picked = scan.selectedRecipeId !== null && retryId === null;
+  // A recipe can be selected while the scan still awaits a pick: an earlier attempt failed while building
+  // the cart. Then any recipe can be picked again; otherwise a selection means the cart is done.
+  const retry = scan.status === "awaiting_pick" && scan.selectedRecipeId !== null;
+  const picked = scan.selectedRecipeId !== null && !retry;
   const haveIds = new Set(scan.confirmed.map((i) => i.canonicalId));
 
   return (
@@ -109,9 +109,9 @@ export default function RecipesPage() {
         </p>
       </div>
 
-      {retryId && (
+      {retry && (
         <p role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Your cart wasn&apos;t finished last time. Press <strong>Cooking this</strong> on the highlighted recipe to try again.
+          Your cart wasn&apos;t finished last time. Pick any recipe to try again.
         </p>
       )}
 
@@ -147,8 +147,8 @@ export default function RecipesPage() {
             haveIds={haveIds}
             substitutions={subs[r.id] ?? []}
             onSubstitutionsChange={(next) => setSubs((prev) => ({ ...prev, [r.id]: next }))}
-            selected={scan.selectedRecipeId === r.id}
-            disabled={picked || picking !== null || (retryId !== null && r.id !== retryId)}
+            selected={!retry && scan.selectedRecipeId === r.id}
+            disabled={picked || picking !== null}
             picking={picking === r.id}
             onPick={() => pick(r.id)}
           />

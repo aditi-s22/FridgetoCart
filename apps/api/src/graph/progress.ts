@@ -21,12 +21,12 @@ export async function progressOf(graph: ScanGraph, scanId: string): Promise<Prog
 }
 
 /**
- * A pick whose cart build failed (store or model down) leaves the run stopped mid-graph: the recipe is
- * already selected, no pause is pending, and the next nodes are still queued. Repeating the pick for
- * the same recipe can then continue the run instead of starting over.
+ * A pick whose cart build failed (store or model down) leaves the run stopped mid-graph: a recipe is
+ * already selected, no pause is pending, and the next nodes are still queued. Such a scan can be
+ * picked again (see restartPick) instead of being stuck.
  */
-export function canResumePick(p: Progress, recipeId: string): boolean {
-  return p.pending === null && p.values.selectedRecipeId === recipeId && p.next.length > 0;
+export function isStalledAfterPick(p: Progress): boolean {
+  return p.pending === null && Boolean(p.values.selectedRecipeId) && p.next.length > 0;
 }
 
 /** The pause a just-finished `invoke` stopped at, read from its output (saves a checkpoint read). */

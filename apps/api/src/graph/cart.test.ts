@@ -57,15 +57,17 @@ vi.mock("../services/recipes", async (importOriginal) => {
 
 const { structured, agentStep } = await import("../services/llm");
 const { buildGraph } = await import("./build");
-const { progressOf } = await import("./progress");
+const { progressOf, isStalledAfterPick } = await import("./progress");
+const { restartPick } = await import("./restartPick");
+const { storeClient } = await import("../services/storeClient");
 
 const thread = { configurable: { thread_id: "s1" } };
 let n = 0;
 const calls = (...c: [string, Record<string, unknown>][]) =>
   new AIMessage({ content: "", tool_calls: c.map(([name, args]) => ({ name, args, id: `t${n++}`, type: "tool_call" as const })) });
 
-/** Runs a scan up to the cart with "Matar Paneer" (ds1): the user only has tomato and onion. */
-async function scanAndPickDs1() {
+/** Runs a scan up to the recipe pick: the user only has tomato and onion. */
+async function scanToPick() {
   vi.mocked(structured)
     .mockResolvedValueOnce({ items: [{ rawName: "tamatar", qty: "3", confidence: 0.9 }] })
     .mockResolvedValueOnce({
@@ -78,6 +80,12 @@ async function scanAndPickDs1() {
   const graph = buildGraph(new MemorySaver());
   await graph.invoke({ ...BASE_STATE }, thread);
   await graph.invoke(new Command({ resume: [{ canonicalId: "tomato", name: "Tomato", qty: 3, unit: null }, { canonicalId: "onion", name: "Onion", qty: 2, unit: null }] }), thread);
+  return graph;
+}
+
+/** ...then picks "Matar Paneer" (ds1), which needs paneer and peas. */
+async function scanAndPickDs1() {
+  const graph = await scanToPick();
   await graph.invoke(new Command({ resume: "ds1" }), thread);
   return progressOf(graph, "s1");
 }
@@ -127,5 +135,43 @@ describe("cart", () => {
     const p = await scanAndPickDs1();
     expect(agentStep).toHaveBeenCalledTimes(10);
     expect(p.values.cart?.items.map((i) => i.canonicalId)).toEqual(["paneer"]); // finalizeCart repaired it
+  });
+});
+
+describe("a pick that fails while building the cart", () => {
+  it("leaves a stalled scan that can be picked again with a different recipe", async () => {
+    const graph = await scanToPick();
+    // The store is down when the cart agent starts.
+    vi.mocked(storeClient.createCart).mockRejectedValueOnce(new AppError(502, "store_unavailable", "Store is unreachable"));
+    await expect(graph.invoke(new Command({ resume: "ds1" }), thread)).rejects.toMatchObject({ code: "store_unavailable" });
+
+    const stalled = await progressOf(graph, "s1");
+    expect(stalled.pending).toBeNull();
+    expect(stalled.values.selectedRecipeId).toBe("ds1");
+    expect(isStalledAfterPick(stalled)).toBe(true);
+
+    // The user picks another recipe that has missing items (Paneer Bhurji needs paneer): they go to the cart.
+    vi.mocked(agentStep).mockResolvedValueOnce(calls(["addToCart", { productId: "p_paneer", qty: 1 }])).mockResolvedValueOnce(new AIMessage("Done."));
+    await restartPick(graph, "s1", "ds3", []);
+
+    const done = await progressOf(graph, "s1");
+    expect(isStalledAfterPick(done)).toBe(false);
+    expect(done.values.selectedRecipeId).toBe("ds3");
+    expect(done.values.missing?.map((m) => m.canonicalId)).toEqual(["paneer"]);
+    expect(done.values.cart?.items.map((i) => i.canonicalId)).toEqual(["paneer"]);
+  });
+
+  it("can also retry the same recipe once the store is back", async () => {
+    const graph = await scanToPick();
+    vi.mocked(storeClient.createCart).mockRejectedValueOnce(new AppError(502, "store_unavailable", "down"));
+    await expect(graph.invoke(new Command({ resume: "ds1" }), thread)).rejects.toBeTruthy();
+
+    vi.mocked(agentStep).mockResolvedValueOnce(calls(["addToCart", { productId: "p_paneer", qty: 1 }])).mockResolvedValueOnce(new AIMessage("Done."));
+    await restartPick(graph, "s1", "ds1", []);
+
+    const done = await progressOf(graph, "s1");
+    expect(done.values.missing?.map((m) => m.canonicalId)).toEqual(["paneer", "peas"]);
+    expect(done.values.cart?.items.map((i) => i.canonicalId)).toEqual(["paneer"]);
+    expect(done.values.cart?.unavailable.map((u) => u.canonicalId)).toEqual(["peas"]); // out of stock → deep links
   });
 });

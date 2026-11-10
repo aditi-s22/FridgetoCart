@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Progress, canResumePick } from "./progress";
+import { type Progress, isStalledAfterPick } from "./progress";
 
 const progress = (over: Partial<Progress> & { selected?: string | null }): Progress => ({
   values: { selectedRecipeId: over.selected ?? null },
@@ -7,18 +7,18 @@ const progress = (over: Partial<Progress> & { selected?: string | null }): Progr
   next: over.next ?? [],
 });
 
-describe("canResumePick", () => {
-  it("resumes a pick that stopped before the cart was built (same recipe, nodes still queued)", () => {
-    expect(canResumePick(progress({ selected: "r1", next: ["cartAgent"] }), "r1")).toBe(true);
+describe("isStalledAfterPick", () => {
+  it("is true when a recipe is selected, no pause is pending and nodes are still queued", () => {
+    expect(isStalledAfterPick(progress({ selected: "r1", next: ["cartAgent"] }))).toBe(true);
   });
-  it("does not resume for a different recipe", () => {
-    expect(canResumePick(progress({ selected: "r1", next: ["cartAgent"] }), "r2")).toBe(false);
+  it("is false for a finished run", () => {
+    expect(isStalledAfterPick(progress({ selected: "r1", next: [] }))).toBe(false);
   });
-  it("does not resume a finished run", () => {
-    expect(canResumePick(progress({ selected: "r1", next: [] }), "r1")).toBe(false);
-  });
-  it("does not resume while a pause is pending (the normal pick path handles that)", () => {
+  it("is false while the recipe-pick pause is pending (the normal path)", () => {
     const pending = { type: "pick_recipe" as const, recipes: [] };
-    expect(canResumePick(progress({ selected: null, pending, next: ["pickRecipe"] }), "r1")).toBe(false);
+    expect(isStalledAfterPick(progress({ selected: null, pending, next: ["pickRecipe"] }))).toBe(false);
+  });
+  it("is false when no recipe was selected yet", () => {
+    expect(isStalledAfterPick(progress({ selected: null, next: ["retrieveRecipes"] }))).toBe(false);
   });
 });

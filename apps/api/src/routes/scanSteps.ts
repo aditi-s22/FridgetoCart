@@ -5,7 +5,8 @@ import { Router } from "express";
 import { userIdOf } from "../auth";
 import { prisma } from "../db";
 import { getGraph, runOf } from "../graph/build";
-import { canResumePick, interruptOf, progressOf } from "../graph/progress";
+import { interruptOf, isStalledAfterPick, progressOf } from "../graph/progress";
+import { restartPick } from "../graph/restartPick";
 import type { ScanStateT } from "../graph/state";
 import { AppError, parse } from "../http";
 import { makeSubCtx, vetAccepted } from "../services/substitutions";
@@ -63,22 +64,12 @@ scanSteps.post("/:id/pick", async (req, res) => {
   const { recipeId, substitutions } = parse(PickRequest, req.body);
   const graph = await getGraph();
   const before = await progressOf(graph, scan.id);
-  if (canResumePick(before, recipeId)) {
-    // An earlier pick got past the recipe choice but failed while building the cart: continue that run.
-    // Its stored substitutions were validated at the original pick, so the request's list is not used again.
-    const started = Date.now();
-    const out = (await withScan(scan.id, () => graph.invoke(null, runOf(scan.id)))) as Partial<ScanStateT>;
-    await prisma.scan.update({ where: { id: scan.id }, data: { status: "done", selectedRecipeId: recipeId } });
-    console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: "cart_resumed", latencyMs: Date.now() - started }));
-    const resumed: PickResponse = { status: "done", cart: out.cart ?? null };
-    res.json(resumed);
-    return;
-  }
-  if (before.pending === null && before.values.selectedRecipeId && before.next.length > 0) {
-    throw new AppError(409, "pick_in_progress", "Building the cart already started for another recipe. Retry that recipe.");
-  }
-  if (before.pending?.type !== "pick_recipe") throw new AppError(409, "not_awaiting_pick", "This scan is not waiting for a recipe pick");
-  const recipe = before.pending.recipes.find((r) => r.id === recipeId);
+  // A pick that failed while building the cart (store or model down) leaves the run stalled after the recipe
+  // choice. Such a scan can be picked again, with any recipe, instead of being stuck.
+  const stalled = isStalledAfterPick(before);
+  if (!stalled && before.pending?.type !== "pick_recipe") throw new AppError(409, "not_awaiting_pick", "This scan is not waiting for a recipe pick");
+  const choices = stalled ? (before.values.recipes ?? []) : before.pending?.type === "pick_recipe" ? before.pending.recipes : [];
+  const recipe = choices.find((r) => r.id === recipeId);
   if (!recipe) throw new AppError(400, "bad_recipe", "Unknown recipe for this scan");
   // The client is untrusted: re-check every accepted substitution against the stored recipe, diet and avoid list.
   let accepted = substitutions;
@@ -92,9 +83,13 @@ scanSteps.post("/:id/pick", async (req, res) => {
   }
 
   const started = Date.now();
-  const out = (await withScan(scan.id, () => graph.invoke(new Command({ resume: recipeId, update: { substitutions: accepted } }), runOf(scan.id)))) as Partial<ScanStateT>;
+  const out = (await withScan(scan.id, () =>
+    stalled
+      ? restartPick(graph, scan.id, recipeId, accepted)
+      : graph.invoke(new Command({ resume: recipeId, update: { substitutions: accepted } }), runOf(scan.id)),
+  )) as Partial<ScanStateT>;
   await prisma.scan.update({ where: { id: scan.id }, data: { status: "done", selectedRecipeId: recipeId } });
-  console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: "cart", latencyMs: Date.now() - started }));
+  console.log(JSON.stringify({ evt: "scan", scanId: scan.id, stage: stalled ? "cart_retry" : "cart", latencyMs: Date.now() - started }));
   const body: PickResponse = { status: "done", cart: out.cart ?? null };
   res.json(body);
 });
